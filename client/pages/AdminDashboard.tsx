@@ -148,22 +148,33 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition">
             <ArrowLeft className="w-5 h-5 text-slate-600" />
-            <span className="font-semibold text-slate-900">Back to Home</span>
+            <span className="font-semibold text-slate-900">Back</span>
           </Link>
           <div className="flex items-center gap-2">
             <BarChart3 className="w-6 h-6 text-primary" />
             <span className="text-sm text-slate-600 font-semibold">Admin Dashboard</span>
           </div>
-          <Button onClick={fetchData} variant="outline" disabled={isLoading}>
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              "Refresh"
+          <div className="flex items-center gap-3 ml-auto">
+            {authenticatedAdmin && (
+              <span className="text-sm text-slate-600 hidden sm:inline">
+                Logged in as: <span className="font-semibold text-slate-900">{authenticatedAdmin.email}</span>
+              </span>
             )}
-          </Button>
+            <Button onClick={fetchData} variant="outline" disabled={isLoading} size="sm">
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "Refresh"
+              )}
+            </Button>
+            <Button onClick={handleLogout} variant="destructive" size="sm" className="gap-2">
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </Button>
+          </div>
         </div>
       </nav>
 
