@@ -11,7 +11,7 @@ interface AuthUser {
   authenticated: boolean;
 }
 
-const STORAGE_KEY = 'campus_ai_admin_auth';
+const STORAGE_KEY = "campus_ai_admin_auth";
 
 /**
  * List of authorized admin accounts
@@ -19,13 +19,13 @@ const STORAGE_KEY = 'campus_ai_admin_auth';
  */
 const AUTHORIZED_ADMINS: AdminCredentials[] = [
   {
-    email: 'admin@campus.edu',
-    pin: '1234'
+    email: "admin@campus.edu",
+    pin: "1234",
   },
   {
-    email: 'grievance@campus.edu',
-    pin: '5678'
-  }
+    email: "grievance@campus.edu",
+    pin: "5678",
+  },
 ];
 
 /**
@@ -33,7 +33,7 @@ const AUTHORIZED_ADMINS: AdminCredentials[] = [
  */
 export function validateAdminCredentials(email: string, pin: string): boolean {
   return AUTHORIZED_ADMINS.some(
-    admin => admin.email === email && admin.pin === pin
+    (admin) => admin.email === email && admin.pin === pin,
   );
 }
 
@@ -44,7 +44,7 @@ export function loginAdmin(email: string, pin: string): AuthUser | null {
   if (validateAdminCredentials(email, pin)) {
     const authUser: AuthUser = {
       email,
-      authenticated: true
+      authenticated: true,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(authUser));
     return authUser;
@@ -65,7 +65,7 @@ export function getAuthenticatedAdmin(): AuthUser | null {
       }
     }
   } catch (error) {
-    console.error('Error retrieving auth user:', error);
+    console.error("Error retrieving auth user:", error);
   }
   return null;
 }

@@ -24,11 +24,13 @@ The app will be available at `http://localhost:5173`
 ## Step 3: Test the Application
 
 ### Try as a Student:
+
 1. Click "Submit Grievance" on the homepage
 2. Fill in your name, email, and complaint
 3. Click "Submit" and see the AI analysis!
 
 ### Try as an Admin:
+
 1. Click "Admin Dashboard" on the homepage
 2. View all submitted grievances
 3. Use filters to sort by category or urgency
@@ -36,11 +38,13 @@ The app will be available at `http://localhost:5173`
 ## Step 4: (Optional) Enable Real AI Analysis
 
 ### Get Gemini API Key:
+
 1. Go to [Google AI Studio](https://aistudio.google.com/apikey)
 2. Click "Get API Key"
 3. Copy the key
 
 ### Configure:
+
 1. Create a `.env` file in project root
 2. Add: `GEMINI_API_KEY=your_copied_key`
 3. Restart dev server
@@ -48,6 +52,7 @@ The app will be available at `http://localhost:5173`
 ## Features Demo
 
 ### Student Form Features:
+
 - ✅ Name and email validation
 - ✅ Character count for grievance
 - ✅ Real-time error messages
@@ -55,6 +60,7 @@ The app will be available at `http://localhost:5173`
 - ✅ AI-generated insights displayed
 
 ### Admin Dashboard Features:
+
 - ✅ Statistics overview (total, high urgency, categories)
 - ✅ Filter by category or urgency
 - ✅ Expandable grievance details
@@ -74,6 +80,7 @@ The backend is automatically running with the dev server:
 ## Troubleshooting
 
 ### Port in use?
+
 ```bash
 # Find and kill process on port 5173/8080
 # macOS/Linux:
@@ -86,6 +93,7 @@ taskkill /PID <PID> /F
 ```
 
 ### Dependencies issue?
+
 ```bash
 rm -rf node_modules pnpm-lock.yaml
 pnpm install
@@ -93,6 +101,7 @@ pnpm dev
 ```
 
 ### Build issues?
+
 ```bash
 pnpm typecheck
 npm run build

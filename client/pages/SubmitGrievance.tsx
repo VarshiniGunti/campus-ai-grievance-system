@@ -35,8 +35,11 @@ export default function SubmitGrievance() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [submissionResult, setSubmissionResult] = useState<SubmissionResult | null>(null);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [submissionResult, setSubmissionResult] =
+    useState<SubmissionResult | null>(null);
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -54,7 +57,8 @@ export default function SubmitGrievance() {
     if (!formData.complaint.trim()) {
       errors.complaint = "Please describe your grievance";
     } else if (formData.complaint.trim().length < 20) {
-      errors.complaint = "Grievance description should be at least 20 characters";
+      errors.complaint =
+        "Grievance description should be at least 20 characters";
     }
 
     setValidationErrors(errors);
@@ -62,18 +66,18 @@ export default function SubmitGrievance() {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Clear validation error for this field
     if (validationErrors[name]) {
-      setValidationErrors(prev => ({
+      setValidationErrors((prev) => ({
         ...prev,
-        [name]: ""
+        [name]: "",
       }));
     }
   };
@@ -116,7 +120,8 @@ export default function SubmitGrievance() {
         });
       }, 1000);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An error occurred";
+      const errorMessage =
+        error instanceof Error ? error.message : "An error occurred";
       toast.error(errorMessage);
       setSubmissionResult({
         success: false,
@@ -132,7 +137,10 @@ export default function SubmitGrievance() {
       {/* Navigation */}
       <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition">
+          <Link
+            to="/"
+            className="flex items-center gap-2 hover:opacity-80 transition"
+          >
             <ArrowLeft className="w-5 h-5 text-slate-600" />
             <span className="font-semibold text-slate-900">Back to Home</span>
           </Link>
@@ -145,9 +153,12 @@ export default function SubmitGrievance() {
         {!submitted ? (
           <div>
             <div className="mb-8">
-              <h1 className="text-4xl font-bold text-slate-900 mb-3">Submit Your Grievance</h1>
+              <h1 className="text-4xl font-bold text-slate-900 mb-3">
+                Submit Your Grievance
+              </h1>
               <p className="text-lg text-slate-600">
-                Share your concern or complaint with us. Our AI system will analyze and prioritize your grievance for swift resolution.
+                Share your concern or complaint with us. Our AI system will
+                analyze and prioritize your grievance for swift resolution.
               </p>
             </div>
 
@@ -155,7 +166,10 @@ export default function SubmitGrievance() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Name Field */}
                 <div>
-                  <label htmlFor="studentName" className="block text-sm font-semibold text-slate-900 mb-2">
+                  <label
+                    htmlFor="studentName"
+                    className="block text-sm font-semibold text-slate-900 mb-2"
+                  >
                     Your Full Name <span className="text-destructive">*</span>
                   </label>
                   <Input
@@ -165,18 +179,26 @@ export default function SubmitGrievance() {
                     placeholder="John Doe"
                     value={formData.studentName}
                     onChange={handleInputChange}
-                    className={validationErrors.studentName ? "border-destructive" : ""}
+                    className={
+                      validationErrors.studentName ? "border-destructive" : ""
+                    }
                     disabled={isLoading}
                   />
                   {validationErrors.studentName && (
-                    <p className="mt-1 text-sm text-destructive">{validationErrors.studentName}</p>
+                    <p className="mt-1 text-sm text-destructive">
+                      {validationErrors.studentName}
+                    </p>
                   )}
                 </div>
 
                 {/* Email Field */}
                 <div>
-                  <label htmlFor="studentEmail" className="block text-sm font-semibold text-slate-900 mb-2">
-                    Your Email Address <span className="text-destructive">*</span>
+                  <label
+                    htmlFor="studentEmail"
+                    className="block text-sm font-semibold text-slate-900 mb-2"
+                  >
+                    Your Email Address{" "}
+                    <span className="text-destructive">*</span>
                   </label>
                   <Input
                     id="studentEmail"
@@ -185,17 +207,24 @@ export default function SubmitGrievance() {
                     placeholder="john@university.edu"
                     value={formData.studentEmail}
                     onChange={handleInputChange}
-                    className={validationErrors.studentEmail ? "border-destructive" : ""}
+                    className={
+                      validationErrors.studentEmail ? "border-destructive" : ""
+                    }
                     disabled={isLoading}
                   />
                   {validationErrors.studentEmail && (
-                    <p className="mt-1 text-sm text-destructive">{validationErrors.studentEmail}</p>
+                    <p className="mt-1 text-sm text-destructive">
+                      {validationErrors.studentEmail}
+                    </p>
                   )}
                 </div>
 
                 {/* Complaint Field */}
                 <div>
-                  <label htmlFor="complaint" className="block text-sm font-semibold text-slate-900 mb-2">
+                  <label
+                    htmlFor="complaint"
+                    className="block text-sm font-semibold text-slate-900 mb-2"
+                  >
                     Your Grievance <span className="text-destructive">*</span>
                   </label>
                   <Textarea
@@ -210,7 +239,9 @@ export default function SubmitGrievance() {
                   />
                   <div className="flex justify-between mt-2">
                     {validationErrors.complaint && (
-                      <p className="text-sm text-destructive">{validationErrors.complaint}</p>
+                      <p className="text-sm text-destructive">
+                        {validationErrors.complaint}
+                      </p>
                     )}
                     <p className="text-xs text-slate-500 ml-auto">
                       {formData.complaint.length} characters
@@ -258,7 +289,9 @@ export default function SubmitGrievance() {
               <AlertCircle className="h-4 w-4 text-accent" />
               <AlertTitle>Why be specific?</AlertTitle>
               <AlertDescription>
-                The more details you provide, the better our AI system can understand and categorize your grievance, leading to faster resolution.
+                The more details you provide, the better our AI system can
+                understand and categorize your grievance, leading to faster
+                resolution.
               </AlertDescription>
             </Alert>
           </div>
@@ -269,9 +302,12 @@ export default function SubmitGrievance() {
               <div className="flex items-start gap-4 mb-6">
                 <CheckCircle2 className="w-8 h-8 text-success flex-shrink-0 mt-1" />
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2">Grievance Submitted Successfully!</h2>
+                  <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                    Grievance Submitted Successfully!
+                  </h2>
                   <p className="text-slate-600">
-                    Your grievance has been received and our AI system is analyzing it right now.
+                    Your grievance has been received and our AI system is
+                    analyzing it right now.
                   </p>
                 </div>
               </div>
@@ -281,13 +317,16 @@ export default function SubmitGrievance() {
             {submissionResult?.grievanceId && (
               <Card className="p-6 border-slate-200">
                 <div className="mb-2">
-                  <p className="text-sm text-slate-600 font-medium">Your Grievance ID</p>
+                  <p className="text-sm text-slate-600 font-medium">
+                    Your Grievance ID
+                  </p>
                 </div>
                 <p className="font-mono text-lg text-primary bg-slate-100 p-4 rounded-lg break-all">
                   {submissionResult.grievanceId}
                 </p>
                 <p className="text-sm text-slate-600 mt-3">
-                  Keep this ID for your reference. You can use it to track your grievance.
+                  Keep this ID for your reference. You can use it to track your
+                  grievance.
                 </p>
               </Card>
             )}
@@ -295,59 +334,94 @@ export default function SubmitGrievance() {
             {/* AI Analysis Results */}
             {submissionResult?.analysis && (
               <Card className="p-8 border-slate-200">
-                <h3 className="text-xl font-bold text-slate-900 mb-6">AI Analysis Results</h3>
-                
+                <h3 className="text-xl font-bold text-slate-900 mb-6">
+                  AI Analysis Results
+                </h3>
+
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <div className="bg-slate-50 p-4 rounded-lg">
-                    <p className="text-xs text-slate-600 font-semibold uppercase mb-1">Category</p>
-                    <p className="text-lg font-bold text-primary">{submissionResult.analysis.category}</p>
+                    <p className="text-xs text-slate-600 font-semibold uppercase mb-1">
+                      Category
+                    </p>
+                    <p className="text-lg font-bold text-primary">
+                      {submissionResult.analysis.category}
+                    </p>
                   </div>
-                  
+
                   <div className="bg-slate-50 p-4 rounded-lg">
-                    <p className="text-xs text-slate-600 font-semibold uppercase mb-1">Urgency</p>
+                    <p className="text-xs text-slate-600 font-semibold uppercase mb-1">
+                      Urgency
+                    </p>
                     <div className="flex items-center gap-2">
-                      <span className={`inline-block w-2 h-2 rounded-full ${
-                        submissionResult.analysis.urgency === 'High' ? 'bg-destructive' :
-                        submissionResult.analysis.urgency === 'Medium' ? 'bg-warning' :
-                        'bg-success'
-                      }`}></span>
-                      <p className="text-lg font-bold text-slate-900">{submissionResult.analysis.urgency}</p>
+                      <span
+                        className={`inline-block w-2 h-2 rounded-full ${
+                          submissionResult.analysis.urgency === "High"
+                            ? "bg-destructive"
+                            : submissionResult.analysis.urgency === "Medium"
+                              ? "bg-warning"
+                              : "bg-success"
+                        }`}
+                      ></span>
+                      <p className="text-lg font-bold text-slate-900">
+                        {submissionResult.analysis.urgency}
+                      </p>
                     </div>
                   </div>
-                  
+
                   <div className="bg-slate-50 p-4 rounded-lg">
-                    <p className="text-xs text-slate-600 font-semibold uppercase mb-1">Sentiment</p>
-                    <p className="text-lg font-bold text-slate-900">{submissionResult.analysis.sentiment}</p>
+                    <p className="text-xs text-slate-600 font-semibold uppercase mb-1">
+                      Sentiment
+                    </p>
+                    <p className="text-lg font-bold text-slate-900">
+                      {submissionResult.analysis.sentiment}
+                    </p>
                   </div>
-                  
+
                   <div className="bg-slate-50 p-4 rounded-lg">
-                    <p className="text-xs text-slate-600 font-semibold uppercase mb-1">Status</p>
+                    <p className="text-xs text-slate-600 font-semibold uppercase mb-1">
+                      Status
+                    </p>
                     <p className="text-lg font-bold text-success">Submitted</p>
                   </div>
                 </div>
 
                 <div className="bg-slate-50 p-6 rounded-lg">
-                  <p className="text-sm text-slate-600 font-semibold mb-2 uppercase">Summary for Admin</p>
-                  <p className="text-slate-800 leading-relaxed">{submissionResult.analysis.summary}</p>
+                  <p className="text-sm text-slate-600 font-semibold mb-2 uppercase">
+                    Summary for Admin
+                  </p>
+                  <p className="text-slate-800 leading-relaxed">
+                    {submissionResult.analysis.summary}
+                  </p>
                 </div>
               </Card>
             )}
 
             {/* Next Steps */}
             <Card className="p-8 border-slate-200 bg-slate-50">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">What Happens Next?</h3>
+              <h3 className="text-lg font-bold text-slate-900 mb-4">
+                What Happens Next?
+              </h3>
               <ol className="space-y-3 text-slate-700">
                 <li className="flex gap-3">
                   <span className="font-bold text-primary min-w-6">1.</span>
-                  <span>Our administrators will review your grievance using the AI-generated summary</span>
+                  <span>
+                    Our administrators will review your grievance using the
+                    AI-generated summary
+                  </span>
                 </li>
                 <li className="flex gap-3">
                   <span className="font-bold text-primary min-w-6">2.</span>
-                  <span>The grievance will be prioritized based on the urgency level (Low, Medium, High)</span>
+                  <span>
+                    The grievance will be prioritized based on the urgency level
+                    (Low, Medium, High)
+                  </span>
                 </li>
                 <li className="flex gap-3">
                   <span className="font-bold text-primary min-w-6">3.</span>
-                  <span>You'll receive updates via email as your grievance is processed</span>
+                  <span>
+                    You'll receive updates via email as your grievance is
+                    processed
+                  </span>
                 </li>
                 <li className="flex gap-3">
                   <span className="font-bold text-primary min-w-6">4.</span>
@@ -364,15 +438,18 @@ export default function SubmitGrievance() {
                 </Button>
               </Link>
               <Link to="/submit-grievance" className="flex-1">
-                <Button className="w-full bg-primary hover:bg-primary/90" onClick={() => {
-                  setSubmitted(false);
-                  setSubmissionResult(null);
-                  setFormData({
-                    studentName: "",
-                    studentEmail: "",
-                    complaint: "",
-                  });
-                }}>
+                <Button
+                  className="w-full bg-primary hover:bg-primary/90"
+                  onClick={() => {
+                    setSubmitted(false);
+                    setSubmissionResult(null);
+                    setFormData({
+                      studentName: "",
+                      studentEmail: "",
+                      complaint: "",
+                    });
+                  }}
+                >
                   Submit Another
                 </Button>
               </Link>

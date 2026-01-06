@@ -5,6 +5,7 @@ A full-stack web application powered by Google Gemini AI that empowers students 
 ## 🎯 Problem Statement
 
 Universities face challenges in:
+
 - **Grievance Management**: Unstructured complaints arriving through multiple channels
 - **Prioritization**: Difficulty determining which issues need immediate attention
 - **Admin Insight**: Lack of structured data for decision-making
@@ -15,14 +16,16 @@ This system transforms unstructured student complaints into categorized, priorit
 ## ✨ Key Features
 
 ### Student Interface
+
 - **Simple Submission**: Intuitive form for free-text grievance submission
 - **Instant Confirmation**: Real-time feedback with grievance ID
 - **AI Insights**: View AI-generated analysis of their complaint
 - **Email Tracking**: Receive updates via email (future enhancement)
 
 ### Admin Dashboard
+
 - **Comprehensive List**: View all submitted grievances
-- **AI-Generated Insights**: 
+- **AI-Generated Insights**:
   - **Category**: Hostel, Academics, Mess, Infrastructure, Safety, Health, Other
   - **Urgency**: Low, Medium, High
   - **Sentiment**: Neutral, Angry, Distressed
@@ -87,6 +90,7 @@ This system transforms unstructured student complaints into categorized, priorit
 ## 🧠 AI Analysis System
 
 ### Gemini Integration
+
 The system uses Google's Gemini Pro model to analyze complaints:
 
 ```
@@ -106,11 +110,13 @@ Admin Dashboard Display
 ```
 
 ### Fallback Strategy
+
 - **Primary**: Google Gemini API (real AI analysis)
 - **Fallback**: Rule-based mock analysis (if API unavailable)
 - **Always Available**: System ensures insights are always provided
 
 ### AI Prompt Template
+
 ```
 You are an AI assistant for a university grievance redressal system.
 Given a student complaint:
@@ -130,6 +136,7 @@ Return ONLY valid JSON in the format:
 ## 🚀 Tech Stack
 
 ### Frontend
+
 - **Framework**: React 18 with TypeScript
 - **Build Tool**: Vite
 - **Styling**: TailwindCSS 3
@@ -141,6 +148,7 @@ Return ONLY valid JSON in the format:
 - **State Management**: React Hooks + TanStack Query
 
 ### Backend
+
 - **Runtime**: Node.js
 - **Framework**: Express.js
 - **AI**: Google Generative AI (Gemini)
@@ -148,6 +156,7 @@ Return ONLY valid JSON in the format:
 - **Type Safety**: TypeScript
 
 ### Deployment
+
 - **Hosting**: Netlify (recommended) or Vercel
 - **Database**: Firebase Firestore (Cloud)
 - **API**: Express backend on Netlify Functions or similar
@@ -232,11 +241,13 @@ pnpm start
 ## 📱 Application Routes
 
 ### Frontend Routes
+
 - `/` - **Homepage**: Overview and navigation
 - `/submit-grievance` - **Student Form**: Submit new grievance
 - `/admin-dashboard` - **Admin Panel**: View and filter grievances
 
 ### Backend API Routes
+
 - `POST /api/grievances` - Submit grievance with AI analysis
 - `GET /api/grievances` - Fetch all grievances (with optional filters)
 - `GET /api/grievances/:id` - Get single grievance details
@@ -247,6 +258,7 @@ pnpm start
 ## 🎨 UI/UX Features
 
 ### Homepage
+
 - Modern gradient background
 - Clear value proposition
 - Step-by-step process visualization
@@ -254,6 +266,7 @@ pnpm start
 - Call-to-action buttons
 
 ### Student Form
+
 - Form validation with error messages
 - Real-time character count
 - Loading states
@@ -262,6 +275,7 @@ pnpm start
 - Next steps guidance
 
 ### Admin Dashboard
+
 - Statistics cards (total, high urgency, categories)
 - Filtering by category and urgency
 - Expandable grievance cards
@@ -283,6 +297,7 @@ pnpm start
 ## 📊 Data Model
 
 ### Grievance Document (Firestore)
+
 ```typescript
 {
   id: string,                    // Auto-generated
@@ -345,6 +360,7 @@ pnpm build
 The system is designed for easy multi-campus deployment:
 
 ### Single Deployment, Multiple Campuses
+
 ```
 1. Add "campus" field to grievance documents:
    {
@@ -357,11 +373,12 @@ The system is designed for easy multi-campus deployment:
    - Filter grievances by campus ID
 
 3. Use Firestore query for campus-specific data:
-   query(collection(db, 'grievances'), 
+   query(collection(db, 'grievances'),
          where('campus', '==', selectedCampus))
 ```
 
 ### Multi-Tenant Architecture
+
 ```
 1. Create separate Firestore collections:
    - /campuses/{campusId}/grievances/{grievanceId}
@@ -377,22 +394,23 @@ The system is designed for easy multi-campus deployment:
 
 When Gemini API is unavailable, the system provides mock analysis based on keywords:
 
-| Keyword | Category | Urgency | Sentiment |
-|---------|----------|---------|-----------|
-| hostel, dorm, room | Hostel | - | - |
-| class, exam, grade | Academics | - | - |
-| mess, food, canteen | Mess | - | - |
-| lab, library, building | Infrastructure | - | - |
-| safe, security, guard | Safety | - | - |
-| health, medical, sick | Health | - | - |
-| urgent, critical, emergency | - | High | - |
-| important, serious | - | Medium | - |
-| angry, furious, outraged | - | - | Angry |
-| worried, concerned, anxious | - | - | Distressed |
+| Keyword                     | Category       | Urgency | Sentiment  |
+| --------------------------- | -------------- | ------- | ---------- |
+| hostel, dorm, room          | Hostel         | -       | -          |
+| class, exam, grade          | Academics      | -       | -          |
+| mess, food, canteen         | Mess           | -       | -          |
+| lab, library, building      | Infrastructure | -       | -          |
+| safe, security, guard       | Safety         | -       | -          |
+| health, medical, sick       | Health         | -       | -          |
+| urgent, critical, emergency | -              | High    | -          |
+| important, serious          | -              | Medium  | -          |
+| angry, furious, outraged    | -              | -       | Angry      |
+| worried, concerned, anxious | -              | -       | Distressed |
 
 ## 📚 API Documentation
 
 ### Submit Grievance
+
 ```bash
 POST /api/grievances
 Content-Type: application/json
@@ -417,6 +435,7 @@ Response:
 ```
 
 ### Get All Grievances
+
 ```bash
 GET /api/grievances?category=Academics&urgency=High
 
@@ -440,6 +459,7 @@ Response:
 ```
 
 ### Get Statistics
+
 ```bash
 GET /api/grievances/stats
 
@@ -471,6 +491,7 @@ Response:
 ## 🐛 Troubleshooting
 
 ### Port Already in Use
+
 ```bash
 # Kill the process using the port
 lsof -i :8080
@@ -478,16 +499,19 @@ kill -9 <PID>
 ```
 
 ### Firebase Connection Issues
+
 - Verify Firebase credentials in `.env`
 - Check internet connection
 - Ensure Firestore database is enabled in Firebase Console
 
 ### Gemini API Errors
+
 - Verify API key is correct
 - Check API quotas in Google Cloud Console
 - System will fall back to mock analysis
 
 ### Build Issues
+
 ```bash
 # Clear node_modules and reinstall
 rm -rf node_modules pnpm-lock.yaml
@@ -501,6 +525,7 @@ pnpm build
 ## 📞 Support & Contribution
 
 For issues, questions, or contributions:
+
 1. Check existing issues in repository
 2. Create detailed bug report with reproduction steps
 3. Submit pull requests with improvements

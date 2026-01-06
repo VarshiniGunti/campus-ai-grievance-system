@@ -39,7 +39,7 @@ export default function AdminLogin() {
 
     try {
       // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const authUser = loginAdmin(email, pin);
 
@@ -51,7 +51,8 @@ export default function AdminLogin() {
         toast.error("Login failed");
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Login failed";
+      const errorMessage =
+        error instanceof Error ? error.message : "Login failed";
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -64,13 +65,18 @@ export default function AdminLogin() {
       {/* Navigation */}
       <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition">
+          <Link
+            to="/"
+            className="flex items-center gap-2 hover:opacity-80 transition"
+          >
             <ArrowLeft className="w-5 h-5 text-slate-600" />
             <span className="font-semibold text-slate-900">Back to Home</span>
           </Link>
           <div className="flex items-center gap-2">
             <Lock className="w-5 h-5 text-primary" />
-            <span className="text-sm text-slate-600 font-semibold">Admin Login</span>
+            <span className="text-sm text-slate-600 font-semibold">
+              Admin Login
+            </span>
           </div>
         </div>
       </nav>
@@ -83,7 +89,9 @@ export default function AdminLogin() {
             <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto mb-4">
               <Lock className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Admin Access</h1>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+              Admin Access
+            </h1>
             <p className="text-slate-600">
               Sign in with your email and PIN to access the admin dashboard
             </p>
@@ -103,7 +111,10 @@ export default function AdminLogin() {
 
               {/* Email Field */}
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-slate-900 mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-semibold text-slate-900 mb-2"
+                >
                   Email Address <span className="text-destructive">*</span>
                 </label>
                 <div className="relative">
@@ -125,7 +136,10 @@ export default function AdminLogin() {
 
               {/* PIN Field */}
               <div>
-                <label htmlFor="pin" className="block text-sm font-semibold text-slate-900 mb-2">
+                <label
+                  htmlFor="pin"
+                  className="block text-sm font-semibold text-slate-900 mb-2"
+                >
                   Admin PIN <span className="text-destructive">*</span>
                 </label>
                 <div className="relative">
@@ -136,7 +150,7 @@ export default function AdminLogin() {
                     placeholder="••••"
                     value={pin}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      const value = e.target.value.replace(/[^0-9]/g, "");
                       if (value.length <= 4) {
                         setPin(value);
                       }
@@ -148,7 +162,9 @@ export default function AdminLogin() {
                     inputMode="numeric"
                   />
                 </div>
-                <p className="text-xs text-slate-500 mt-2">Enter your 4-digit PIN</p>
+                <p className="text-xs text-slate-500 mt-2">
+                  Enter your 4-digit PIN
+                </p>
               </div>
 
               {/* Login Button */}

@@ -6,7 +6,7 @@ import {
   submitGrievance,
   getGrievances,
   getGrievanceById,
-  getGrievanceStats
+  getGrievanceStats,
 } from "./routes/grievance";
 
 export function createServer() {

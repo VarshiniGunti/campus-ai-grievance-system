@@ -7,6 +7,7 @@ The Campus AI Grievance Intelligence System now includes a secure admin login sy
 ## Features
 
 ### ✅ Secure Authentication
+
 - Email-based login
 - 4-digit PIN authentication
 - Session management with localStorage
@@ -14,6 +15,7 @@ The Campus AI Grievance Intelligence System now includes a secure admin login sy
 - Protected routes (redirects to login if not authenticated)
 
 ### ✅ User Experience
+
 - Clean, professional login interface
 - Error messages for failed attempts
 - Demo credentials display (collapsible)
@@ -26,26 +28,31 @@ The Campus AI Grievance Intelligence System now includes a secure admin login sy
 For testing purposes, use these credentials:
 
 ### Account 1
+
 - **Email**: `admin@campus.edu`
 - **PIN**: `1234`
 
 ### Account 2
+
 - **Email**: `grievance@campus.edu`
 - **PIN**: `5678`
 
 ## How to Use
 
 ### Step 1: Access Admin Login
+
 1. Go to the homepage
 2. Click the **"Admin Login"** button in the top navigation
 3. Or navigate directly to `/admin-login`
 
 ### Step 2: Enter Credentials
+
 1. Enter your **email address**
 2. Enter your **4-digit PIN**
 3. Click **"Sign In"**
 
 ### Step 3: Access Dashboard
+
 - On successful login, you'll be redirected to the admin dashboard
 - Your email will be displayed in the top right
 - View and filter all grievances
@@ -54,11 +61,13 @@ For testing purposes, use these credentials:
 ## Features on Admin Dashboard
 
 ### After Logging In
+
 - Dashboard is only accessible with valid credentials
 - Your email is displayed in the navigation bar
 - **Logout** button available in the top right
 
 ### Admin Capabilities
+
 - View all submitted grievances
 - Filter by category or urgency
 - View detailed grievance information
@@ -68,6 +77,7 @@ For testing purposes, use these credentials:
 ## Security Implementation
 
 ### How It Works
+
 ```
 User Input (Email + PIN)
          ↓
@@ -81,6 +91,7 @@ Redirect to Dashboard
 ```
 
 ### Features
+
 - ✅ Client-side validation
 - ✅ Secure credential storage
 - ✅ Route protection
@@ -109,12 +120,12 @@ Edit `client/utils/admin-auth.ts`:
 ```typescript
 const AUTHORIZED_ADMINS: AdminCredentials[] = [
   {
-    email: 'admin@campus.edu',
-    pin: '1234'
+    email: "admin@campus.edu",
+    pin: "1234",
   },
   {
-    email: 'new-admin@campus.edu',
-    pin: '9012'
+    email: "new-admin@campus.edu",
+    pin: "9012",
   },
   // Add more accounts as needed
 ];
@@ -135,21 +146,25 @@ const AUTHORIZED_ADMINS: AdminCredentials[] = [
 ## Troubleshooting
 
 ### "Invalid email or PIN"
+
 - ✓ Check that email is entered correctly
 - ✓ Verify PIN is exactly 4 digits
 - ✓ Check if account exists (see demo credentials above)
 
 ### Stuck on Login Page
+
 - ✓ Try clearing localStorage: `localStorage.clear()`
 - ✓ Check browser console for errors (F12)
 - ✓ Try a different browser or incognito mode
 
 ### Can't Access Dashboard
+
 - ✓ If redirected to login, your session may have expired
 - ✓ Login again with your credentials
 - ✓ Clear browser cache if issues persist
 
 ### Logout Not Working
+
 - ✓ Check if JavaScript is enabled
 - ✓ Try refreshing the page after logout
 - ✓ Check browser console for errors
@@ -157,12 +172,14 @@ const AUTHORIZED_ADMINS: AdminCredentials[] = [
 ## Pages
 
 ### `/admin-login` - Login Page
+
 - Email and PIN input fields
 - Validation and error handling
 - Demo credentials reference
 - Link back to homepage
 
 ### `/admin-dashboard` - Protected Dashboard
+
 - Requires authentication to access
 - Displays admin email
 - Shows logout button
@@ -171,12 +188,14 @@ const AUTHORIZED_ADMINS: AdminCredentials[] = [
 ## Security Notes
 
 ### For Development/Demo
+
 - ✅ Credentials stored in localStorage
 - ✅ Client-side validation
 - ✅ No database required
 - ✅ Easy to test
 
 ### For Production
+
 - ⚠️ **DO NOT USE AS-IS**
 - ⚠️ Move to backend authentication
 - ⚠️ Use secure token storage
@@ -192,14 +211,14 @@ The authentication system is designed to easily integrate with a backend API:
 ```typescript
 // Example: Backend authentication
 async function authenticateWithBackend(email: string, pin: string) {
-  const response = await fetch('/api/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, pin })
+  const response = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, pin }),
   });
-  
+
   const { token } = await response.json();
-  localStorage.setItem('auth_token', token);
+  localStorage.setItem("auth_token", token);
 }
 ```
 
@@ -219,6 +238,7 @@ async function authenticateWithBackend(email: string, pin: string) {
 ## Support
 
 For issues or questions about admin login:
+
 1. Check this guide's troubleshooting section
 2. Review `client/utils/admin-auth.ts` for implementation details
 3. Check browser console (F12) for error messages

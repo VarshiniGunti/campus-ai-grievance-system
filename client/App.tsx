@@ -25,7 +25,10 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/submit-grievance" element={<SubmitGrievance />} />
           <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/admin-dashboard" element={<ProtectedRoute element={<AdminDashboard />} />} />
+          <Route
+            path="/admin-dashboard"
+            element={<ProtectedRoute element={<AdminDashboard />} />}
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

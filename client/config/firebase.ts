@@ -1,15 +1,30 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, Query, DocumentData } from 'firebase/firestore';
+import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  Query,
+  DocumentData,
+} from "firebase/firestore";
 
 // Firebase configuration
 // Replace these with your actual Firebase config from Firebase Console
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForDevelopment",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "campus-ai-grievance.firebaseapp.com",
+  apiKey:
+    import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForDevelopment",
+  authDomain:
+    import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ||
+    "campus-ai-grievance.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "campus-ai-grievance",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "campus-ai-grievance.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abc123def456"
+  storageBucket:
+    import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ||
+    "campus-ai-grievance.appspot.com",
+  messagingSenderId:
+    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abc123def456",
 };
 
 // Initialize Firebase
@@ -39,16 +54,18 @@ export interface AIAnalysis {
 /**
  * Submit a new grievance to Firestore
  */
-export async function submitGrievance(grievanceData: Omit<GrievanceData, 'id' | 'createdAt'>): Promise<string> {
+export async function submitGrievance(
+  grievanceData: Omit<GrievanceData, "id" | "createdAt">,
+): Promise<string> {
   try {
-    const docRef = await addDoc(collection(db, 'grievances'), {
+    const docRef = await addDoc(collection(db, "grievances"), {
       ...grievanceData,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
     return docRef.id;
   } catch (error) {
-    console.error('Error submitting grievance:', error);
+    console.error("Error submitting grievance:", error);
     throw error;
   }
 }
@@ -59,12 +76,12 @@ export async function submitGrievance(grievanceData: Omit<GrievanceData, 'id' | 
 export async function fetchGrievances(): Promise<GrievanceData[]> {
   try {
     const q: Query<DocumentData> = query(
-      collection(db, 'grievances'),
-      orderBy('createdAt', 'desc')
+      collection(db, "grievances"),
+      orderBy("createdAt", "desc"),
     );
     const querySnapshot = await getDocs(q);
     const grievances: GrievanceData[] = [];
-    
+
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       grievances.push({
@@ -76,14 +93,18 @@ export async function fetchGrievances(): Promise<GrievanceData[]> {
         urgency: data.urgency,
         sentiment: data.sentiment,
         summary: data.summary,
-        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt,
-        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : data.updatedAt,
+        createdAt: data.createdAt?.toDate
+          ? data.createdAt.toDate()
+          : data.createdAt,
+        updatedAt: data.updatedAt?.toDate
+          ? data.updatedAt.toDate()
+          : data.updatedAt,
       });
     });
-    
+
     return grievances;
   } catch (error) {
-    console.error('Error fetching grievances:', error);
+    console.error("Error fetching grievances:", error);
     throw error;
   }
 }
@@ -93,13 +114,13 @@ export async function fetchGrievances(): Promise<GrievanceData[]> {
  */
 export async function updateGrievanceWithAnalysis(
   grievanceId: string,
-  analysis: AIAnalysis
+  analysis: AIAnalysis,
 ): Promise<void> {
   try {
     // This would require firestore update function
     // For now, the backend handles this
   } catch (error) {
-    console.error('Error updating grievance:', error);
+    console.error("Error updating grievance:", error);
     throw error;
   }
 }

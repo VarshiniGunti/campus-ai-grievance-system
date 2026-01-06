@@ -1,5 +1,5 @@
-import { RequestHandler } from 'express';
-import { analyzeGrievance } from '../utils/ai-analysis';
+import { RequestHandler } from "express";
+import { analyzeGrievance } from "../utils/ai-analysis";
 
 // Mock database (replace with actual Firebase operations)
 interface StoredGrievance {
@@ -23,18 +23,18 @@ const grievances: Map<string, StoredGrievance> = new Map();
 export const submitGrievance: RequestHandler = async (req, res) => {
   try {
     const { studentName, studentEmail, complaint } = req.body;
-    
+
     // Validation
     if (!studentName || !studentEmail || !complaint) {
       res.status(400).json({
-        error: 'Missing required fields: studentName, studentEmail, complaint'
+        error: "Missing required fields: studentName, studentEmail, complaint",
       });
       return;
     }
-    
+
     // Analyze the complaint using AI
     const analysis = await analyzeGrievance(complaint);
-    
+
     // Create grievance record
     const grievanceId = `grievance_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const grievance: StoredGrievance = {
@@ -48,10 +48,10 @@ export const submitGrievance: RequestHandler = async (req, res) => {
       summary: analysis.summary,
       createdAt: new Date().toISOString(),
     };
-    
+
     // Store in mock database (would be Firebase in production)
     grievances.set(grievanceId, grievance);
-    
+
     res.status(201).json({
       success: true,
       grievanceId,
@@ -59,13 +59,13 @@ export const submitGrievance: RequestHandler = async (req, res) => {
         category: analysis.category,
         urgency: analysis.urgency,
         sentiment: analysis.sentiment,
-        summary: analysis.summary
-      }
+        summary: analysis.summary,
+      },
     });
   } catch (error) {
-    console.error('Error submitting grievance:', error);
+    console.error("Error submitting grievance:", error);
     res.status(500).json({
-      error: 'Failed to submit grievance'
+      error: "Failed to submit grievance",
     });
   }
 };
@@ -77,29 +77,32 @@ export const submitGrievance: RequestHandler = async (req, res) => {
 export const getGrievances: RequestHandler = (req, res) => {
   try {
     const { category, urgency } = req.query;
-    
+
     let results = Array.from(grievances.values());
-    
+
     // Apply filters if provided
-    if (category && typeof category === 'string') {
-      results = results.filter(g => g.category === category);
+    if (category && typeof category === "string") {
+      results = results.filter((g) => g.category === category);
     }
-    
-    if (urgency && typeof urgency === 'string') {
-      results = results.filter(g => g.urgency === urgency);
+
+    if (urgency && typeof urgency === "string") {
+      results = results.filter((g) => g.urgency === urgency);
     }
-    
+
     // Sort by creation date (newest first)
-    results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    
+    results.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+
     res.json({
       count: results.length,
-      grievances: results
+      grievances: results,
     });
   } catch (error) {
-    console.error('Error fetching grievances:', error);
+    console.error("Error fetching grievances:", error);
     res.status(500).json({
-      error: 'Failed to fetch grievances'
+      error: "Failed to fetch grievances",
     });
   }
 };
@@ -111,22 +114,22 @@ export const getGrievances: RequestHandler = (req, res) => {
 export const getGrievanceById: RequestHandler = (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const grievance = grievances.get(id);
     if (!grievance) {
       res.status(404).json({
-        error: 'Grievance not found'
+        error: "Grievance not found",
       });
       return;
     }
-    
+
     res.json({
-      grievance
+      grievance,
     });
   } catch (error) {
-    console.error('Error fetching grievance:', error);
+    console.error("Error fetching grievance:", error);
     res.status(500).json({
-      error: 'Failed to fetch grievance'
+      error: "Failed to fetch grievance",
     });
   }
 };
@@ -138,25 +141,28 @@ export const getGrievanceById: RequestHandler = (req, res) => {
 export const getGrievanceStats: RequestHandler = (req, res) => {
   try {
     const allGrievances = Array.from(grievances.values());
-    
+
     const stats = {
       total: allGrievances.length,
       byCategory: {} as Record<string, number>,
       byUrgency: {} as Record<string, number>,
       bySentiment: {} as Record<string, number>,
     };
-    
-    allGrievances.forEach(grievance => {
-      stats.byCategory[grievance.category] = (stats.byCategory[grievance.category] || 0) + 1;
-      stats.byUrgency[grievance.urgency] = (stats.byUrgency[grievance.urgency] || 0) + 1;
-      stats.bySentiment[grievance.sentiment] = (stats.bySentiment[grievance.sentiment] || 0) + 1;
+
+    allGrievances.forEach((grievance) => {
+      stats.byCategory[grievance.category] =
+        (stats.byCategory[grievance.category] || 0) + 1;
+      stats.byUrgency[grievance.urgency] =
+        (stats.byUrgency[grievance.urgency] || 0) + 1;
+      stats.bySentiment[grievance.sentiment] =
+        (stats.bySentiment[grievance.sentiment] || 0) + 1;
     });
-    
+
     res.json(stats);
   } catch (error) {
-    console.error('Error fetching statistics:', error);
+    console.error("Error fetching statistics:", error);
     res.status(500).json({
-      error: 'Failed to fetch statistics'
+      error: "Failed to fetch statistics",
     });
   }
 };

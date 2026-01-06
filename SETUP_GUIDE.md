@@ -3,6 +3,7 @@
 This guide walks you through configuring Google Gemini AI and Firebase Firestore for the Campus AI Grievance System.
 
 ## Table of Contents
+
 1. [Google Gemini Setup](#google-gemini-setup)
 2. [Firebase Setup](#firebase-setup)
 3. [Local Development](#local-development)
@@ -11,7 +12,9 @@ This guide walks you through configuring Google Gemini AI and Firebase Firestore
 ## Google Gemini Setup
 
 ### Why Gemini?
+
 Google Gemini AI provides intelligent natural language processing to:
+
 - Categorize complaints into predefined categories
 - Assess urgency levels
 - Detect emotional sentiment
@@ -35,12 +38,14 @@ Google Gemini AI provides intelligent natural language processing to:
 ### Step 2: Configure in Your Project
 
 1. **Create `.env` file**
+
    ```bash
    cd your-project-directory
    touch .env
    ```
 
 2. **Add Gemini API Key**
+
    ```
    GEMINI_API_KEY=your_api_key_here
    ```
@@ -80,7 +85,9 @@ Google Gemini AI provides intelligent natural language processing to:
 ## Firebase Setup
 
 ### Why Firebase?
+
 Firebase Firestore provides:
+
 - Real-time database with automatic scaling
 - Secure data storage with authentication
 - Easy to use API
@@ -143,13 +150,14 @@ Firebase Firestore provides:
      projectId: "...",
      storageBucket: "...",
      messagingSenderId: "...",
-     appId: "..."
+     appId: "...",
    };
    ```
 
 ### Step 4: Configure in Your Project
 
 1. **Update `.env` file**
+
    ```
    VITE_FIREBASE_API_KEY=your_api_key
    VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
@@ -187,6 +195,7 @@ The app uses the configuration to automatically initialize Firestore. Data will 
 ### Firebase Security Best Practices
 
 #### Development Mode
+
 ```
 rules_version = '2';
 service cloud.firestore {
@@ -199,6 +208,7 @@ service cloud.firestore {
 ```
 
 #### Production Mode (Recommended)
+
 ```
 rules_version = '2';
 service cloud.firestore {
@@ -214,6 +224,7 @@ service cloud.firestore {
 ```
 
 #### Admin-only Mode
+
 ```
 rules_version = '2';
 service cloud.firestore {
@@ -242,10 +253,12 @@ service cloud.firestore {
 ### Running Without External Services
 
 The app works perfectly without external services:
+
 - **Without Gemini**: Uses mock AI analysis (rule-based)
 - **Without Firebase**: Uses in-memory database (data lost on restart)
 
 This is perfect for:
+
 - Local development and testing
 - Demos and prototypes
 - Learning and understanding the codebase
@@ -255,7 +268,9 @@ This is perfect for:
 ### Gemini API Issues
 
 #### Issue: "Gemini API key not configured"
-**Solution**: 
+
+**Solution**:
+
 ```bash
 # 1. Check .env file exists
 cat .env
@@ -266,19 +281,25 @@ pnpm dev
 ```
 
 #### Issue: "Invalid API key"
+
 **Solution**:
+
 - Go back to [Google AI Studio](https://aistudio.google.com/apikey)
 - Delete old key and create a new one
 - Copy and paste new key exactly into `.env`
 
 #### Issue: "Quota exceeded"
+
 **Solution**:
+
 - Check usage in [Google Cloud Console](https://console.cloud.google.com/)
 - Wait for quota to reset (usually daily)
 - Consider upgrading Google Cloud plan
 
 #### Issue: Still seeing "Using mock AI analysis"
+
 **Solution**:
+
 1. Check server logs for error messages
 2. Verify API key is correct
 3. Check internet connection
@@ -287,7 +308,9 @@ pnpm dev
 ### Firebase Issues
 
 #### Issue: "Firebase initialization failed"
+
 **Solution**:
+
 ```bash
 # Check if .env variables are set correctly
 echo $VITE_FIREBASE_PROJECT_ID
@@ -297,21 +320,27 @@ pnpm dev
 ```
 
 #### Issue: "Permission denied" in Firestore
+
 **Solution**:
+
 - Go to Firebase Console
 - Firestore Database → Rules
 - Update rules (see "Firebase Security Best Practices" section)
 - Publish rules
 
 #### Issue: "Grievances not appearing in dashboard"
+
 **Solution**:
+
 1. Check Firebase Console Firestore
 2. Verify `grievances` collection exists
 3. Check browser console for errors (F12)
 4. Try refreshing page
 
 #### Issue: "Cannot connect to Firestore"
+
 **Solution**:
+
 - Check internet connection
 - Verify Firebase project ID in `.env`
 - Go to Firebase Console and enable Firestore
@@ -320,11 +349,13 @@ pnpm dev
 ## Environment Variables Reference
 
 ### Development (Required)
+
 ```
 GEMINI_API_KEY=your_key  # Optional, mock analysis used if missing
 ```
 
 ### Firebase (Optional)
+
 ```
 VITE_FIREBASE_API_KEY=...
 VITE_FIREBASE_AUTH_DOMAIN=...
@@ -337,6 +368,7 @@ VITE_FIREBASE_APP_ID=...
 ## Testing Your Setup
 
 ### Test Script
+
 ```bash
 #!/bin/bash
 
@@ -384,6 +416,7 @@ Once you have everything set up:
 ## Support
 
 For issues or questions:
+
 - Check [README.md](./README.md) troubleshooting section
 - Review server logs: `pnpm dev` shows all errors
 - Check browser console: Press F12 in browser
