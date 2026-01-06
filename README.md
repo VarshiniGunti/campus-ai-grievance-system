@@ -511,14 +511,6 @@ rm -rf dist
 pnpm build
 ```
 
-## 📞 Support & Contribution
-
-For issues, questions, or contributions:
-
-1. Check existing issues in repository
-2. Create detailed bug report with reproduction steps
-3. Submit pull requests with improvements
-4. Follow the existing code style and conventions
 
 ## 📄 License
 
@@ -545,7 +537,7 @@ This project is provided as-is for educational and institutional use.
 - Built with Google Gemini AI for intelligent analysis
 - Firebase Firestore for reliable data storage
 - React and modern web technologies
-- Community feedback and contributions
+- Project for Techsprint GDG on campus
 
 ---
 
