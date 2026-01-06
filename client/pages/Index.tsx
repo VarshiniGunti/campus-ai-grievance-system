@@ -34,10 +34,10 @@ export default function Homepage() {
                 Submit Grievance
               </Button>
             </Link>
-            <Link to="/admin-dashboard">
+            <Link to="/admin-login">
               <Button className="bg-primary hover:bg-primary/90 gap-2">
                 <BarChart3 className="w-4 h-4" />
-                Admin Panel
+                Admin Login
               </Button>
             </Link>
           </div>
@@ -63,10 +63,10 @@ export default function Homepage() {
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </Link>
-              <Link to="/admin-dashboard">
+              <Link to="/admin-login">
                 <Button size="lg" variant="outline" className="gap-2 w-full sm:w-auto">
                   <BarChart3 className="w-5 h-5" />
-                  View Dashboard
+                  Admin Login
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </Link>
@@ -221,30 +221,6 @@ export default function Homepage() {
                 </div>
               </div>
             </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-primary to-accent text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to Improve Campus Life?</h2>
-          <p className="text-xl mb-8 opacity-90">
-            Start by submitting a grievance or access the admin dashboard to view insights
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/submit-grievance">
-              <Button size="lg" className="bg-white text-primary hover:bg-slate-100 gap-2 w-full sm:w-auto">
-                Submit Grievance
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </Link>
-            <Link to="/admin-dashboard">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/20 gap-2 w-full sm:w-auto">
-                Admin Dashboard
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </Link>
           </div>
         </div>
       </section>
