@@ -45,16 +45,24 @@ interface Statistics {
 type FilterType = "category" | "urgency" | "none";
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [grievances, setGrievances] = useState<Grievance[]>([]);
   const [stats, setStats] = useState<Statistics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [filterType, setFilterType] = useState<FilterType>("none");
   const [filterValue, setFilterValue] = useState<string>("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const authenticatedAdmin = getAuthenticatedAdmin();
 
   const categories = ["Hostel", "Academics", "Mess", "Infrastructure", "Safety", "Health", "Other"];
   const urgencies = ["Low", "Medium", "High"];
   const sentiments = ["Neutral", "Angry", "Distressed"];
+
+  const handleLogout = () => {
+    logoutAdmin();
+    toast.success("Logged out successfully");
+    navigate("/");
+  };
 
   // Fetch grievances and stats
   useEffect(() => {
