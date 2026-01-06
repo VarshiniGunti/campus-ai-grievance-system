@@ -252,8 +252,6 @@ pnpm start
 - `GET /api/grievances` - Fetch all grievances (with optional filters)
 - `GET /api/grievances/:id` - Get single grievance details
 - `GET /api/grievances/stats` - Get dashboard statistics
-- `GET /api/ping` - Health check
-- `GET /api/demo` - Demo endpoint
 
 ## 🎨 UI/UX Features
 
@@ -284,15 +282,6 @@ pnpm start
   - Urgency: Red (High), Yellow (Medium), Green (Low)
   - Sentiment: Red (Angry), Yellow (Distressed), Gray (Neutral)
 - Responsive grid layout
-
-## 🔐 Security Considerations
-
-- **Environment Variables**: Never commit `.env` files
-- **API Keys**: Use server-side only (not exposed to client)
-- **CORS**: Configured appropriately
-- **Input Validation**: Both frontend and backend
-- **XSS Protection**: React escapes content automatically
-- **SQL Injection**: Using Firestore (NoSQL, safer by design)
 
 ## 📊 Data Model
 
