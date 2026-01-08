@@ -28,6 +28,14 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
+  // Grievance API routes
+  app.post("/api/grievances", submitGrievance);
+  app.get("/api/grievances/stats", getGrievanceStats);
+  app.get("/api/grievances/search/:id", searchGrievanceById);
+  app.patch("/api/grievances/:id/status", updateGrievanceStatus);
+  app.delete("/api/grievances/:id", deleteGrievance);
+  app.get("/api/grievances/:id", getGrievanceById);
+  app.get("/api/grievances", getGrievances);
 
   return app;
 }
