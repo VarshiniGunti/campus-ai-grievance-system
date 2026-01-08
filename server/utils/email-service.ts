@@ -7,7 +7,7 @@ export interface EmailNotification {
   to: string;
   studentName: string;
   grievanceId: string;
-  status: 'viewed' | 'cleared';
+  status: "viewed" | "cleared";
   category: string;
   urgency: string;
   message?: string;
@@ -17,11 +17,13 @@ export interface EmailNotification {
  * Send email notification to student
  * Mock implementation - replace with actual email service
  */
-export async function sendStatusNotification(notification: EmailNotification): Promise<boolean> {
+export async function sendStatusNotification(
+  notification: EmailNotification,
+): Promise<boolean> {
   try {
     // Mock email service - logs to console
-    console.log('📧 EMAIL NOTIFICATION SENT');
-    console.log('─'.repeat(60));
+    console.log("📧 EMAIL NOTIFICATION SENT");
+    console.log("─".repeat(60));
     console.log(`To: ${notification.to}`);
     console.log(`Student: ${notification.studentName}`);
     console.log(`Grievance ID: ${notification.grievanceId}`);
@@ -29,13 +31,13 @@ export async function sendStatusNotification(notification: EmailNotification): P
     console.log(`Category: ${notification.category}`);
     console.log(`Urgency: ${notification.urgency}`);
     console.log(`─'.repeat(60)`);
-    
+
     const subject = getEmailSubject(notification.status);
     const body = getEmailBody(notification);
-    
+
     console.log(`Subject: ${subject}`);
     console.log(`Message:\n${body}`);
-    console.log('─'.repeat(60));
+    console.log("─".repeat(60));
 
     // In production, uncomment and use actual email service:
     /*
@@ -59,7 +61,7 @@ export async function sendStatusNotification(notification: EmailNotification): P
 
     return true;
   } catch (error) {
-    console.error('Error sending email notification:', error);
+    console.error("Error sending email notification:", error);
     return false;
   }
 }
@@ -67,11 +69,11 @@ export async function sendStatusNotification(notification: EmailNotification): P
 /**
  * Get email subject based on status
  */
-function getEmailSubject(status: 'viewed' | 'cleared'): string {
-  if (status === 'viewed') {
-    return '✅ Your Grievance Has Been Reviewed';
+function getEmailSubject(status: "viewed" | "cleared"): string {
+  if (status === "viewed") {
+    return "✅ Your Grievance Has Been Reviewed";
   } else {
-    return '🎉 Your Grievance Has Been Resolved';
+    return "🎉 Your Grievance Has Been Resolved";
   }
 }
 
@@ -79,11 +81,13 @@ function getEmailSubject(status: 'viewed' | 'cleared'): string {
  * Get email body HTML
  */
 function getEmailBody(notification: EmailNotification): string {
-  const { studentName, grievanceId, status, category, urgency, message } = notification;
-  
-  const statusMessage = status === 'viewed'
-    ? 'Your grievance has been reviewed by our administration team.'
-    : 'Your grievance has been resolved and cleared from our system.';
+  const { studentName, grievanceId, status, category, urgency, message } =
+    notification;
+
+  const statusMessage =
+    status === "viewed"
+      ? "Your grievance has been reviewed by our administration team."
+      : "Your grievance has been resolved and cleared from our system.";
 
   return `
 <!DOCTYPE html>
@@ -104,7 +108,7 @@ function getEmailBody(notification: EmailNotification): string {
 <body>
   <div class="container">
     <div class="header">
-      <h1>${status === 'viewed' ? '✅ Grievance Reviewed' : '🎉 Grievance Resolved'}</h1>
+      <h1>${status === "viewed" ? "✅ Grievance Reviewed" : "🎉 Grievance Resolved"}</h1>
     </div>
     
     <div class="content">
@@ -112,7 +116,7 @@ function getEmailBody(notification: EmailNotification): string {
       
       <p>${statusMessage}</p>
       
-      ${message ? `<p>${message}</p>` : ''}
+      ${message ? `<p>${message}</p>` : ""}
       
       <div class="info-box">
         <div class="label">Grievance ID</div>
@@ -147,7 +151,9 @@ function getEmailBody(notification: EmailNotification): string {
 /**
  * Send batch email notifications
  */
-export async function sendBatchNotifications(notifications: EmailNotification[]): Promise<number> {
+export async function sendBatchNotifications(
+  notifications: EmailNotification[],
+): Promise<number> {
   let successCount = 0;
   for (const notification of notifications) {
     const success = await sendStatusNotification(notification);

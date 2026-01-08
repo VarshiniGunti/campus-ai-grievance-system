@@ -68,7 +68,15 @@ export default function AdminDashboard() {
   const [statusMessage, setStatusMessage] = useState<string>("");
   const authenticatedAdmin = getAuthenticatedAdmin();
 
-  const categories = ["Hostel", "Academics", "Mess", "Infrastructure", "Safety", "Health", "Other"];
+  const categories = [
+    "Hostel",
+    "Academics",
+    "Mess",
+    "Infrastructure",
+    "Safety",
+    "Health",
+    "Other",
+  ];
   const urgencies = ["Low", "Medium", "High"];
   const sentiments = ["Neutral", "Angry", "Distressed"];
   const statuses = ["submitted", "viewed", "cleared"];
@@ -95,7 +103,8 @@ export default function AdminDashboard() {
       setGrievances(grievancesData.grievances || []);
       setStats(statsData);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load data";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to load data";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -131,7 +140,10 @@ export default function AdminDashboard() {
     fetchData();
   };
 
-  const handleUpdateStatus = async (grievanceId: string, status: "viewed" | "cleared") => {
+  const handleUpdateStatus = async (
+    grievanceId: string,
+    status: "viewed" | "cleared",
+  ) => {
     try {
       const response = await fetch(`/api/grievances/${grievanceId}/status`, {
         method: "PATCH",
@@ -145,7 +157,7 @@ export default function AdminDashboard() {
 
       const result = await response.json();
       toast.success(
-        `Grievance marked as ${status}. ${result.emailNotificationSent ? "✉️ Email sent to student." : ""}`
+        `Grievance marked as ${status}. ${result.emailNotificationSent ? "✉️ Email sent to student." : ""}`,
       );
 
       setShowStatusModal(null);
@@ -157,7 +169,11 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (grievanceId: string) => {
-    if (!confirm("Are you sure you want to delete this grievance? This action cannot be undone.")) {
+    if (
+      !confirm(
+        "Are you sure you want to delete this grievance? This action cannot be undone.",
+      )
+    ) {
       return;
     }
 
@@ -266,24 +282,46 @@ export default function AdminDashboard() {
       {/* Navigation */}
       <nav className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition">
+          <Link
+            to="/"
+            className="flex items-center gap-2 hover:opacity-80 transition"
+          >
             <ArrowLeft className="w-5 h-5 text-slate-600" />
             <span className="font-semibold text-slate-900">Back</span>
           </Link>
           <div className="flex items-center gap-2">
             <BarChart3 className="w-6 h-6 text-primary" />
-            <span className="text-sm text-slate-600 font-semibold">Admin Dashboard</span>
+            <span className="text-sm text-slate-600 font-semibold">
+              Admin Dashboard
+            </span>
           </div>
           <div className="flex items-center gap-3 ml-auto">
             {authenticatedAdmin && (
               <span className="text-sm text-slate-600 hidden sm:inline">
-                Logged in as: <span className="font-semibold text-slate-900">{authenticatedAdmin.email}</span>
+                Logged in as:{" "}
+                <span className="font-semibold text-slate-900">
+                  {authenticatedAdmin.email}
+                </span>
               </span>
             )}
-            <Button onClick={fetchData} variant="outline" disabled={isLoading} size="sm">
-              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Refresh"}
+            <Button
+              onClick={fetchData}
+              variant="outline"
+              disabled={isLoading}
+              size="sm"
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "Refresh"
+              )}
             </Button>
-            <Button onClick={handleLogout} variant="destructive" size="sm" className="gap-2">
+            <Button
+              onClick={handleLogout}
+              variant="destructive"
+              size="sm"
+              className="gap-2"
+            >
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">Logout</span>
             </Button>
@@ -295,7 +333,9 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">Grievance Dashboard</h1>
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">
+            Grievance Dashboard
+          </h1>
           <p className="text-lg text-slate-600">
             View and manage all campus grievances with AI-powered insights
           </p>
@@ -309,7 +349,9 @@ export default function AdminDashboard() {
                 <MessageSquare className="w-4 h-4" />
                 Total
               </div>
-              <div className="text-3xl font-bold text-slate-900">{stats.total}</div>
+              <div className="text-3xl font-bold text-slate-900">
+                {stats.total}
+              </div>
               <p className="text-xs text-slate-500 mt-2">All submissions</p>
             </Card>
 
@@ -318,8 +360,12 @@ export default function AdminDashboard() {
                 <TrendingUp className="w-4 h-4" />
                 High Urgency
               </div>
-              <div className="text-3xl font-bold text-slate-900">{stats.byUrgency["High"] || 0}</div>
-              <p className="text-xs text-slate-500 mt-2">Immediate action needed</p>
+              <div className="text-3xl font-bold text-slate-900">
+                {stats.byUrgency["High"] || 0}
+              </div>
+              <p className="text-xs text-slate-500 mt-2">
+                Immediate action needed
+              </p>
             </Card>
 
             <Card className="p-6 border-slate-200 hover:shadow-md transition-shadow">
@@ -327,7 +373,9 @@ export default function AdminDashboard() {
                 <Eye className="w-4 h-4" />
                 Viewed
               </div>
-              <div className="text-3xl font-bold text-slate-900">{stats.byStatus?.viewed || 0}</div>
+              <div className="text-3xl font-bold text-slate-900">
+                {stats.byStatus?.viewed || 0}
+              </div>
               <p className="text-xs text-slate-500 mt-2">Under review</p>
             </Card>
 
@@ -336,7 +384,9 @@ export default function AdminDashboard() {
                 <CheckCircle2 className="w-4 h-4" />
                 Cleared
               </div>
-              <div className="text-3xl font-bold text-slate-900">{stats.byStatus?.cleared || 0}</div>
+              <div className="text-3xl font-bold text-slate-900">
+                {stats.byStatus?.cleared || 0}
+              </div>
               <p className="text-xs text-slate-500 mt-2">Resolved</p>
             </Card>
           </div>
@@ -346,7 +396,9 @@ export default function AdminDashboard() {
         <Card className="p-6 border-slate-200 mb-8">
           <form onSubmit={handleSearch} className="flex gap-3">
             <div className="flex-1">
-              <label className="text-sm font-semibold text-slate-900 block mb-2">Search by Grievance ID</label>
+              <label className="text-sm font-semibold text-slate-900 block mb-2">
+                Search by Grievance ID
+              </label>
               <div className="flex gap-2">
                 <Input
                   type="text"
@@ -355,12 +407,25 @@ export default function AdminDashboard() {
                   onChange={(e) => setSearchId(e.target.value)}
                   disabled={searchLoading}
                 />
-                <Button type="submit" disabled={searchLoading} className="gap-2">
-                  {searchLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                <Button
+                  type="submit"
+                  disabled={searchLoading}
+                  className="gap-2"
+                >
+                  {searchLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4" />
+                  )}
                   <span className="hidden sm:inline">Search</span>
                 </Button>
                 {searchId && (
-                  <Button type="button" variant="outline" onClick={handleClearSearch} disabled={searchLoading}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleClearSearch}
+                    disabled={searchLoading}
+                  >
                     Clear
                   </Button>
                 )}
@@ -373,7 +438,9 @@ export default function AdminDashboard() {
         <Card className="p-6 border-slate-200 mb-8">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <div className="flex-1 min-w-0">
-              <label className="text-sm font-semibold text-slate-900 block mb-2">Filter By</label>
+              <label className="text-sm font-semibold text-slate-900 block mb-2">
+                Filter By
+              </label>
               <Select
                 value={filterType}
                 onValueChange={(value) => {
@@ -398,7 +465,9 @@ export default function AdminDashboard() {
 
             {filterType === "category" && (
               <div className="flex-1">
-                <label className="text-sm font-semibold text-slate-900 block mb-2">Select Category</label>
+                <label className="text-sm font-semibold text-slate-900 block mb-2">
+                  Select Category
+                </label>
                 <Select value={filterValue} onValueChange={setFilterValue}>
                   <SelectTrigger className="w-full sm:w-48">
                     <SelectValue placeholder="Choose category..." />
@@ -416,7 +485,9 @@ export default function AdminDashboard() {
 
             {filterType === "urgency" && (
               <div className="flex-1">
-                <label className="text-sm font-semibold text-slate-900 block mb-2">Select Urgency</label>
+                <label className="text-sm font-semibold text-slate-900 block mb-2">
+                  Select Urgency
+                </label>
                 <Select value={filterValue} onValueChange={setFilterValue}>
                   <SelectTrigger className="w-full sm:w-48">
                     <SelectValue placeholder="Choose urgency..." />
@@ -434,7 +505,9 @@ export default function AdminDashboard() {
 
             {filterType === "status" && (
               <div className="flex-1">
-                <label className="text-sm font-semibold text-slate-900 block mb-2">Select Status</label>
+                <label className="text-sm font-semibold text-slate-900 block mb-2">
+                  Select Status
+                </label>
                 <Select value={filterValue} onValueChange={setFilterValue}>
                   <SelectTrigger className="w-full sm:w-48">
                     <SelectValue placeholder="Choose status..." />
@@ -453,7 +526,9 @@ export default function AdminDashboard() {
             {filterType === "date" && (
               <div className="flex gap-2 flex-1 min-w-0">
                 <div className="flex-1">
-                  <label className="text-sm font-semibold text-slate-900 block mb-2">From Date</label>
+                  <label className="text-sm font-semibold text-slate-900 block mb-2">
+                    From Date
+                  </label>
                   <Input
                     type="date"
                     value={startDate}
@@ -462,7 +537,9 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-sm font-semibold text-slate-900 block mb-2">To Date</label>
+                  <label className="text-sm font-semibold text-slate-900 block mb-2">
+                    To Date
+                  </label>
                   <Input
                     type="date"
                     value={endDate}
@@ -498,13 +575,25 @@ export default function AdminDashboard() {
           <Card className="p-12 text-center border-slate-200">
             <MessageSquare className="w-12 h-12 text-slate-300 mx-auto mb-4" />
             <p className="text-slate-600 text-lg">
-              {searchId ? "No grievance found with this ID" : filterValue ? "No grievances match your filters" : "No grievances submitted yet"}
+              {searchId
+                ? "No grievance found with this ID"
+                : filterValue
+                  ? "No grievances match your filters"
+                  : "No grievances submitted yet"}
             </p>
           </Card>
         ) : (
           <div className="space-y-4">
             {filteredGrievances.map((grievance) => (
-              <Card key={grievance.id} className="p-6 border-slate-200 hover:shadow-md transition-all cursor-pointer" onClick={() => setExpandedId(expandedId === grievance.id ? null : grievance.id)}>
+              <Card
+                key={grievance.id}
+                className="p-6 border-slate-200 hover:shadow-md transition-all cursor-pointer"
+                onClick={() =>
+                  setExpandedId(
+                    expandedId === grievance.id ? null : grievance.id,
+                  )
+                }
+              >
                 <div className="flex flex-col gap-4">
                   {/* Header Row */}
                   <div className="flex items-start justify-between gap-4">
@@ -512,20 +601,28 @@ export default function AdminDashboard() {
                       <h3 className="text-lg font-semibold text-slate-900 truncate">
                         From: {grievance.studentName}
                       </h3>
-                      <p className="text-sm text-slate-500 truncate">{grievance.studentEmail}</p>
+                      <p className="text-sm text-slate-500 truncate">
+                        {grievance.studentEmail}
+                      </p>
                       <p className="text-xs text-slate-400 mt-1">
                         {new Date(grievance.createdAt).toLocaleString()}
                       </p>
                     </div>
 
                     <div className="flex gap-2 flex-wrap justify-end">
-                      <Badge className={`whitespace-nowrap ${getCategoryColor(grievance.category)}`}>
+                      <Badge
+                        className={`whitespace-nowrap ${getCategoryColor(grievance.category)}`}
+                      >
                         {grievance.category}
                       </Badge>
-                      <Badge className={`whitespace-nowrap border ${getUrgencyColor(grievance.urgency)}`}>
+                      <Badge
+                        className={`whitespace-nowrap border ${getUrgencyColor(grievance.urgency)}`}
+                      >
                         {grievance.urgency}
                       </Badge>
-                      <Badge className={`whitespace-nowrap ${getStatusColor(grievance.status)}`}>
+                      <Badge
+                        className={`whitespace-nowrap ${getStatusColor(grievance.status)}`}
+                      >
                         {grievance.status}
                       </Badge>
                     </div>
@@ -533,13 +630,19 @@ export default function AdminDashboard() {
 
                   {/* Summary Row */}
                   <div className="bg-slate-50 p-4 rounded-lg">
-                    <p className="text-sm text-slate-700 line-clamp-2">{grievance.summary}</p>
+                    <p className="text-sm text-slate-700 line-clamp-2">
+                      {grievance.summary}
+                    </p>
                   </div>
 
                   {/* Sentiment Badge */}
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-600">Sentiment:</span>
-                    <Badge className={`whitespace-nowrap ${getSentimentColor(grievance.sentiment)}`}>
+                    <span className="text-xs font-semibold text-slate-600">
+                      Sentiment:
+                    </span>
+                    <Badge
+                      className={`whitespace-nowrap ${getSentimentColor(grievance.sentiment)}`}
+                    >
                       {grievance.sentiment}
                     </Badge>
                   </div>
@@ -548,7 +651,9 @@ export default function AdminDashboard() {
                   {expandedId === grievance.id && (
                     <div className="border-t pt-4 mt-4 space-y-4">
                       <div>
-                        <p className="text-xs font-semibold text-slate-600 mb-2">Full Complaint</p>
+                        <p className="text-xs font-semibold text-slate-600 mb-2">
+                          Full Complaint
+                        </p>
                         <p className="text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
                           {grievance.complaint}
                         </p>
@@ -556,8 +661,12 @@ export default function AdminDashboard() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="bg-blue-50 p-4 rounded-lg">
-                          <p className="text-xs text-slate-600 font-semibold mb-1">CATEGORY</p>
-                          <p className="text-lg font-bold text-blue-900">{grievance.category}</p>
+                          <p className="text-xs text-slate-600 font-semibold mb-1">
+                            CATEGORY
+                          </p>
+                          <p className="text-lg font-bold text-blue-900">
+                            {grievance.category}
+                          </p>
                         </div>
                         <div
                           className={`p-4 rounded-lg ${
@@ -568,7 +677,9 @@ export default function AdminDashboard() {
                                 : "bg-success/10"
                           }`}
                         >
-                          <p className="text-xs text-slate-600 font-semibold mb-1">URGENCY</p>
+                          <p className="text-xs text-slate-600 font-semibold mb-1">
+                            URGENCY
+                          </p>
                           <p
                             className={`text-lg font-bold ${
                               grievance.urgency === "High"
@@ -581,22 +692,34 @@ export default function AdminDashboard() {
                             {grievance.urgency}
                           </p>
                         </div>
-                        <div className={`p-4 rounded-lg ${getSentimentColor(grievance.sentiment)}`}>
-                          <p className="text-xs text-slate-600 font-semibold mb-1">SENTIMENT</p>
-                          <p className="text-lg font-bold">{grievance.sentiment}</p>
+                        <div
+                          className={`p-4 rounded-lg ${getSentimentColor(grievance.sentiment)}`}
+                        >
+                          <p className="text-xs text-slate-600 font-semibold mb-1">
+                            SENTIMENT
+                          </p>
+                          <p className="text-lg font-bold">
+                            {grievance.sentiment}
+                          </p>
                         </div>
                       </div>
 
                       <div>
-                        <p className="text-xs font-semibold text-slate-600 mb-2">ADMIN SUMMARY</p>
+                        <p className="text-xs font-semibold text-slate-600 mb-2">
+                          ADMIN SUMMARY
+                        </p>
                         <p className="text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
                           {grievance.summary}
                         </p>
                       </div>
 
                       <div className="bg-slate-50 p-4 rounded-lg">
-                        <p className="text-xs font-semibold text-slate-600 mb-2">GRIEVANCE ID</p>
-                        <p className="font-mono text-sm text-slate-700 break-all">{grievance.id}</p>
+                        <p className="text-xs font-semibold text-slate-600 mb-2">
+                          GRIEVANCE ID
+                        </p>
+                        <p className="font-mono text-sm text-slate-700 break-all">
+                          {grievance.id}
+                        </p>
                       </div>
 
                       {/* Action Buttons */}
@@ -646,7 +769,9 @@ export default function AdminDashboard() {
 
                   {/* Expand Indicator */}
                   <p className="text-xs text-primary text-center mt-2">
-                    {expandedId === grievance.id ? "Click to collapse" : "Click to view details"}
+                    {expandedId === grievance.id
+                      ? "Click to collapse"
+                      : "Click to view details"}
                   </p>
                 </div>
               </Card>
@@ -654,7 +779,8 @@ export default function AdminDashboard() {
 
             <div className="text-center pt-4">
               <p className="text-sm text-slate-600">
-                Showing {filteredGrievances.length} of {grievances.length} grievances
+                Showing {filteredGrievances.length} of {grievances.length}{" "}
+                grievances
               </p>
             </div>
           </div>
@@ -665,7 +791,8 @@ export default function AdminDashboard() {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <Card className="w-full max-w-md p-6">
               <h3 className="text-lg font-bold text-slate-900 mb-4">
-                Mark as {showStatusModal.includes("-clear") ? "Cleared" : "Viewed"}
+                Mark as{" "}
+                {showStatusModal.includes("-clear") ? "Cleared" : "Viewed"}
               </h3>
               <div className="space-y-4">
                 <div>
@@ -685,14 +812,20 @@ export default function AdminDashboard() {
                     onClick={() =>
                       handleUpdateStatus(
                         showStatusModal.replace("-clear", ""),
-                        showStatusModal.includes("-clear") ? "cleared" : "viewed"
+                        showStatusModal.includes("-clear")
+                          ? "cleared"
+                          : "viewed",
                       )
                     }
                     className="flex-1"
                   >
                     Confirm
                   </Button>
-                  <Button variant="outline" onClick={() => setShowStatusModal(null)} className="flex-1">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowStatusModal(null)}
+                    className="flex-1"
+                  >
                     Cancel
                   </Button>
                 </div>

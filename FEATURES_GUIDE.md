@@ -19,9 +19,11 @@ This guide covers all the new and existing features of the Campus AI Grievance I
 ## 👨‍🎓 Student Grievance Submission
 
 ### Overview
+
 Students can submit grievances with text descriptions and optional media attachments (images/videos).
 
 ### Access
+
 - Navigate to homepage
 - Click "Submit Grievance" button
 - Or visit `/submit-grievance`
@@ -29,11 +31,13 @@ Students can submit grievances with text descriptions and optional media attachm
 ### Features
 
 #### 1. **Basic Information**
+
 - **Name**: Full name of the student (required)
 - **Email**: Student's email address (required, validated)
 - **Grievance Description**: Detailed complaint (minimum 20 characters)
 
 #### 2. **File Upload** (NEW!)
+
 - **Supported Formats**: JPG, PNG, GIF, MP4, WebM
 - **File Size Limit**: 5MB per file
 - **Maximum Files**: 5 files per grievance
@@ -46,13 +50,16 @@ Students can submit grievances with text descriptions and optional media attachm
   - Character counter
 
 #### 3. **Form Validation**
+
 - Real-time error messages
 - Email format validation
 - Complaint length validation
 - Clear error indicators
 
 #### 4. **Success Response**
+
 Upon successful submission, students receive:
+
 - ✅ Grievance ID (for tracking)
 - 🤖 AI Analysis Results:
   - Category (Hostel, Academics, Mess, Infrastructure, Safety, Health, Other)
@@ -62,6 +69,7 @@ Upon successful submission, students receive:
 - 📧 Email confirmation notification
 
 #### 5. **After Submission**
+
 - View detailed analysis results
 - Copy grievance ID for future reference
 - See next steps
@@ -72,26 +80,31 @@ Upon successful submission, students receive:
 ## 🔐 Admin Login System
 
 ### Overview
+
 Secure authentication system for administrators to access the dashboard.
 
 ### Access
+
 - Click "Admin Login" on homepage
 - Or navigate to `/admin-login`
 
 ### Features
 
 #### 1. **Email & PIN Authentication**
+
 - **Email**: Administrator email address
 - **PIN**: 4-digit numeric code
 - Both fields are required
 
 #### 2. **PIN Visibility Toggle** (NEW!)
+
 - 👁️ **Eye Icon**: Click to show PIN
 - 👁️‍🗨️ **Eye Off Icon**: Click to hide PIN
 - Secure password input by default
 - Smooth toggle animation
 
 #### 3. **Demo Credentials** (for testing)
+
 ```
 Account 1:
 - Email: admin@campus.edu
@@ -103,12 +116,14 @@ Account 2:
 ```
 
 #### 4. **Error Handling**
+
 - Clear error messages for invalid credentials
 - Toast notifications
 - Form persists on error
 - Accessibility features
 
 #### 5. **Session Management**
+
 - Automatic session storage
 - Protected routes redirect to login
 - One-click logout from dashboard
@@ -118,9 +133,11 @@ Account 2:
 ## 📊 Admin Dashboard Features
 
 ### Overview
+
 Comprehensive dashboard for reviewing and managing all submitted grievances.
 
 ### Access
+
 - Login with admin credentials
 - Automatic redirect to `/admin-dashboard`
 - Protected route - requires authentication
@@ -128,12 +145,14 @@ Comprehensive dashboard for reviewing and managing all submitted grievances.
 ### Main Features
 
 #### 1. **Statistics Overview** (4 Key Metrics)
+
 - **Total**: All grievances submitted
 - **High Urgency**: Grievances requiring immediate action
 - **Viewed**: Grievances under review
 - **Cleared**: Resolved grievances
 
 #### 2. **Search by Grievance ID** (NEW!)
+
 - **Search Box**: Enter grievance ID to find specific complaint
 - **Real-time Search**: Instant results
 - **Clear Search**: Reset to view all grievances
@@ -141,12 +160,15 @@ Comprehensive dashboard for reviewing and managing all submitted grievances.
 - **Search Format**: Copy-paste grievance ID from student confirmation
 
 **Example Search:**
+
 ```
 grievance_1704523456_abc123def456
 ```
 
 #### 3. **Multi-Filter System** (NEW!)
+
 Filter grievances by:
+
 - ✅ **No Filter**: View all grievances
 - 📂 **Category**: Hostel, Academics, Mess, Infrastructure, Safety, Health, Other
 - 🚨 **Urgency**: Low, Medium, High
@@ -154,6 +176,7 @@ Filter grievances by:
 - 📅 **Date Range**: From date to To date (inclusive)
 
 **Combined Filters:**
+
 - All filters work independently
 - Can combine multiple criteria
 - Clear all filters button
@@ -162,6 +185,7 @@ Filter grievances by:
 #### 4. **Status Management** (NEW!)
 
 ##### Status Options
+
 1. **Submitted** (Default)
    - Initial state when grievance created
    - Not yet reviewed by admin
@@ -177,6 +201,7 @@ Filter grievances by:
    - Optional resolution message
 
 ##### How to Update Status
+
 1. Click on any grievance card to expand details
 2. Select "Mark as Viewed" or "Mark as Cleared"
 3. (Optional) Add a message for the student
@@ -184,13 +209,16 @@ Filter grievances by:
 5. Email automatically sent to student
 
 #### 5. **Delete Functionality** (NEW!)
+
 - **Delete Button**: Available in expanded grievance view
 - **Confirmation**: Prevents accidental deletion
 - **Permanent**: Cannot be undone
 - **Immediate**: Instant removal from system
 
 #### 6. **Detailed Grievance View**
+
 Click any grievance card to expand and see:
+
 - Full complaint text
 - Student name and email
 - Category, Urgency, Sentiment
@@ -201,6 +229,7 @@ Click any grievance card to expand and see:
 - Action buttons (Mark as Viewed/Cleared, Delete)
 
 #### 7. **Color-Coded Information**
+
 - **Urgency**:
   - 🔴 Red: High urgency
   - 🟡 Yellow: Medium urgency
@@ -215,11 +244,13 @@ Click any grievance card to expand and see:
   - ⚫ Gray: Neutral
 
 #### 8. **Refresh Functionality**
+
 - **Refresh Button**: Reload all data
 - **Loading State**: Spinner during refresh
 - **Manual Control**: Check updates anytime
 
 #### 9. **Admin Session Info**
+
 - Display logged-in admin email
 - Quick logout button
 - Prevents unauthorized access
@@ -229,11 +260,13 @@ Click any grievance card to expand and see:
 ## 📧 Email Notifications
 
 ### Overview
+
 Automated email notifications sent to students when grievance status changes.
 
 ### Notification Triggers
 
 #### 1. **When Marked as "Viewed"**
+
 - **Subject**: ✅ Your Grievance Has Been Reviewed
 - **Content**:
   - Confirmation of review
@@ -242,6 +275,7 @@ Automated email notifications sent to students when grievance status changes.
   - Next steps information
 
 #### 2. **When Marked as "Cleared"**
+
 - **Subject**: 🎉 Your Grievance Has Been Resolved
 - **Content**:
   - Confirmation of resolution
@@ -250,6 +284,7 @@ Automated email notifications sent to students when grievance status changes.
   - Contact information for follow-up
 
 ### Email Information Included
+
 - Student name (personalized)
 - Grievance ID (for reference)
 - Category (issue type)
@@ -259,13 +294,16 @@ Automated email notifications sent to students when grievance status changes.
 - Footer with system branding
 
 ### Mock Email Service
+
 **Current Implementation**: Console logging (development)
+
 - Email logs displayed in server console
 - Formatted for readability
 - Useful for testing
 
 **Production Implementation**:
 For production deployment, integrate with:
+
 - Nodemailer
 - SendGrid
 - AWS SES
@@ -277,6 +315,7 @@ For production deployment, integrate with:
 ## 🔌 API Endpoints
 
 ### Base URL
+
 ```
 http://localhost:8080/api
 ```
@@ -284,11 +323,13 @@ http://localhost:8080/api
 ### Grievance Endpoints
 
 #### 1. **Submit Grievance**
+
 ```
 POST /api/grievances
 ```
 
 **Request:**
+
 ```json
 {
   "studentName": "John Doe",
@@ -298,6 +339,7 @@ POST /api/grievances
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -312,17 +354,20 @@ POST /api/grievances
 ```
 
 #### 2. **Get All Grievances**
+
 ```
 GET /api/grievances?category=Academics&urgency=High&startDate=2024-01-01&endDate=2024-12-31
 ```
 
 **Query Parameters:**
+
 - `category` (optional): Hostel, Academics, Mess, Infrastructure, Safety, Health, Other
 - `urgency` (optional): Low, Medium, High
 - `startDate` (optional): YYYY-MM-DD
 - `endDate` (optional): YYYY-MM-DD
 
 **Response:**
+
 ```json
 {
   "count": 5,
@@ -345,16 +390,19 @@ GET /api/grievances?category=Academics&urgency=High&startDate=2024-01-01&endDate
 ```
 
 #### 3. **Search Grievance by ID**
+
 ```
 GET /api/grievances/search/:id
 ```
 
 **Example:**
+
 ```
 GET /api/grievances/search/grievance_1704523456_abc123def456
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -375,11 +423,13 @@ GET /api/grievances/search/grievance_1704523456_abc123def456
 ```
 
 #### 4. **Update Grievance Status**
+
 ```
 PATCH /api/grievances/:id/status
 ```
 
 **Request:**
+
 ```json
 {
   "status": "viewed",
@@ -388,6 +438,7 @@ PATCH /api/grievances/:id/status
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -398,11 +449,13 @@ PATCH /api/grievances/:id/status
 ```
 
 #### 5. **Delete Grievance**
+
 ```
 DELETE /api/grievances/:id
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -412,11 +465,13 @@ DELETE /api/grievances/:id
 ```
 
 #### 6. **Get Single Grievance**
+
 ```
 GET /api/grievances/:id
 ```
 
 **Response:**
+
 ```json
 {
   "grievance": { ... }
@@ -424,11 +479,13 @@ GET /api/grievances/:id
 ```
 
 #### 7. **Get Statistics**
+
 ```
 GET /api/grievances/stats
 ```
 
 **Response:**
+
 ```json
 {
   "total": 42,
@@ -522,12 +579,14 @@ GET /api/grievances/stats
 ## 🔒 Security Features
 
 ### Student Data
+
 - ✅ Email validation
 - ✅ Form validation
 - ✅ Secure data transmission
 - ✅ No sensitive data logging
 
 ### Admin Access
+
 - ✅ PIN-based authentication
 - ✅ Protected routes
 - ✅ Session management
@@ -535,6 +594,7 @@ GET /api/grievances/stats
 - ✅ Email display in UI
 
 ### Database
+
 - ✅ Mock data isolation (development)
 - ✅ Ready for Firebase integration
 - ✅ Prepared for backend authentication
@@ -544,6 +604,7 @@ GET /api/grievances/stats
 ## 📱 Responsive Design
 
 All features are fully responsive:
+
 - ✅ Mobile (< 640px)
 - ✅ Tablet (640px - 1024px)
 - ✅ Desktop (> 1024px)
@@ -570,26 +631,33 @@ All features are fully responsive:
 ### Student Issues
 
 **Q: My file won't upload**
+
 - A: Check file size (max 5MB) and format (JPG, PNG, GIF, MP4, WebM)
 
 **Q: I forgot my grievance ID**
+
 - A: Check your email for confirmation message containing the ID
 
 **Q: Form validation errors**
+
 - A: Ensure all required fields are filled and email format is correct
 
 ### Admin Issues
 
 **Q: PIN not showing/hiding**
+
 - A: Click the eye icon toggle, ensure caps lock is off
 
 **Q: Can't find grievance by ID**
+
 - A: Double-check grievance ID for typos, use copy-paste from student email
 
 **Q: Email not being sent**
+
 - A: Currently in mock mode (console logging). Production needs email service configured.
 
 **Q: Logout not working**
+
 - A: Clear browser cache or try in private/incognito mode
 
 ---
@@ -597,6 +665,7 @@ All features are fully responsive:
 ## 📞 Support
 
 For detailed setup and technical information, see:
+
 - [README.md](./README.md) - Full documentation
 - [QUICKSTART.md](./QUICKSTART.md) - Quick setup guide
 - [SETUP_GUIDE.md](./SETUP_GUIDE.md) - Configuration guide
