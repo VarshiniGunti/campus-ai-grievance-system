@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import { analyzeGrievance } from "../utils/ai-analysis";
+import { sendStatusNotification } from "../utils/email-service";
 
 // Mock database (replace with actual Firebase operations)
 interface StoredGrievance {
@@ -11,7 +12,9 @@ interface StoredGrievance {
   urgency: string;
   sentiment: string;
   summary: string;
+  status: "submitted" | "viewed" | "cleared";
   createdAt: string;
+  updatedAt: string;
 }
 
 const grievances: Map<string, StoredGrievance> = new Map();
@@ -37,6 +40,7 @@ export const submitGrievance: RequestHandler = async (req, res) => {
 
     // Create grievance record
     const grievanceId = `grievance_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
     const grievance: StoredGrievance = {
       id: grievanceId,
       studentName,
@@ -46,7 +50,9 @@ export const submitGrievance: RequestHandler = async (req, res) => {
       urgency: analysis.urgency,
       sentiment: analysis.sentiment,
       summary: analysis.summary,
-      createdAt: new Date().toISOString(),
+      status: "submitted",
+      createdAt: now,
+      updatedAt: now,
     };
 
     // Store in mock database (would be Firebase in production)
@@ -72,11 +78,11 @@ export const submitGrievance: RequestHandler = async (req, res) => {
 
 /**
  * Get all grievances with optional filtering
- * GET /api/grievances?category=Academics&urgency=High
+ * GET /api/grievances?category=Academics&urgency=High&startDate=2024-01-01&endDate=2024-12-31
  */
 export const getGrievances: RequestHandler = (req, res) => {
   try {
-    const { category, urgency } = req.query;
+    const { category, urgency, startDate, endDate } = req.query;
 
     let results = Array.from(grievances.values());
 
@@ -87,6 +93,17 @@ export const getGrievances: RequestHandler = (req, res) => {
 
     if (urgency && typeof urgency === "string") {
       results = results.filter((g) => g.urgency === urgency);
+    }
+
+    // Date range filter
+    if (startDate || endDate) {
+      const start = startDate ? new Date(startDate as string) : new Date(0);
+      const end = endDate ? new Date(endDate as string) : new Date();
+
+      results = results.filter((g) => {
+        const date = new Date(g.createdAt);
+        return date >= start && date <= end;
+      });
     }
 
     // Sort by creation date (newest first)
@@ -108,7 +125,143 @@ export const getGrievances: RequestHandler = (req, res) => {
 };
 
 /**
- * Get a single grievance by ID
+ * Search grievance by ID
+ * GET /api/grievances/search/:id
+ */
+export const searchGrievanceById: RequestHandler = (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id || id.trim().length === 0) {
+      res.status(400).json({
+        error: "Grievance ID is required",
+      });
+      return;
+    }
+
+    const grievance = grievances.get(id.trim());
+    if (!grievance) {
+      res.status(404).json({
+        error: `Grievance with ID "${id}" not found`,
+        grievanceId: id,
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      grievance,
+    });
+  } catch (error) {
+    console.error("Error searching grievance:", error);
+    res.status(500).json({
+      error: "Failed to search grievance",
+    });
+  }
+};
+
+/**
+ * Update grievance status (viewed/cleared)
+ * PATCH /api/grievances/:id/status
+ */
+export const updateGrievanceStatus: RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, message } = req.body;
+
+    // Validation
+    if (!id) {
+      res.status(400).json({
+        error: "Grievance ID is required",
+      });
+      return;
+    }
+
+    if (!status || !["viewed", "cleared"].includes(status)) {
+      res.status(400).json({
+        error: "Status must be either 'viewed' or 'cleared'",
+      });
+      return;
+    }
+
+    const grievance = grievances.get(id);
+    if (!grievance) {
+      res.status(404).json({
+        error: "Grievance not found",
+      });
+      return;
+    }
+
+    // Update grievance
+    grievance.status = status;
+    grievance.updatedAt = new Date().toISOString();
+    grievances.set(id, grievance);
+
+    // Send email notification
+    const emailSent = await sendStatusNotification({
+      to: grievance.studentEmail,
+      studentName: grievance.studentName,
+      grievanceId: grievance.id,
+      status: status as "viewed" | "cleared",
+      category: grievance.category,
+      urgency: grievance.urgency,
+      message,
+    });
+
+    res.json({
+      success: true,
+      grievance,
+      emailNotificationSent: emailSent,
+      message: `Grievance marked as ${status}. ${emailSent ? "Email notification sent." : "Email notification could not be sent."}`,
+    });
+  } catch (error) {
+    console.error("Error updating grievance status:", error);
+    res.status(500).json({
+      error: "Failed to update grievance status",
+    });
+  }
+};
+
+/**
+ * Delete a grievance
+ * DELETE /api/grievances/:id
+ */
+export const deleteGrievance: RequestHandler = (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      res.status(400).json({
+        error: "Grievance ID is required",
+      });
+      return;
+    }
+
+    const grievance = grievances.get(id);
+    if (!grievance) {
+      res.status(404).json({
+        error: "Grievance not found",
+      });
+      return;
+    }
+
+    grievances.delete(id);
+
+    res.json({
+      success: true,
+      message: "Grievance deleted successfully",
+      deletedGrievanceId: id,
+    });
+  } catch (error) {
+    console.error("Error deleting grievance:", error);
+    res.status(500).json({
+      error: "Failed to delete grievance",
+    });
+  }
+};
+
+/**
+ * Get a single grievance by ID (legacy endpoint)
  * GET /api/grievances/:id
  */
 export const getGrievanceById: RequestHandler = (req, res) => {
@@ -147,6 +300,11 @@ export const getGrievanceStats: RequestHandler = (req, res) => {
       byCategory: {} as Record<string, number>,
       byUrgency: {} as Record<string, number>,
       bySentiment: {} as Record<string, number>,
+      byStatus: {
+        submitted: 0,
+        viewed: 0,
+        cleared: 0,
+      },
     };
 
     allGrievances.forEach((grievance) => {
@@ -156,6 +314,8 @@ export const getGrievanceStats: RequestHandler = (req, res) => {
         (stats.byUrgency[grievance.urgency] || 0) + 1;
       stats.bySentiment[grievance.sentiment] =
         (stats.bySentiment[grievance.sentiment] || 0) + 1;
+      stats.byStatus[grievance.status] =
+        (stats.byStatus[grievance.status] || 0) + 1;
     });
 
     res.json(stats);
