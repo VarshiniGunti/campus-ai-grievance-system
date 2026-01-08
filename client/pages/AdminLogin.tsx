@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Lock, Mail, ArrowLeft, LogIn } from "lucide-react";
+import { AlertCircle, Lock, Mail, ArrowLeft, LogIn, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { loginAdmin } from "@/utils/admin-auth";
 
@@ -12,6 +12,7 @@ export default function AdminLogin() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [pin, setPin] = useState("");
+  const [showPin, setShowPin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -146,7 +147,7 @@ export default function AdminLogin() {
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <Input
                     id="pin"
-                    type="password"
+                    type={showPin ? "text" : "password"}
                     placeholder="••••"
                     value={pin}
                     onChange={(e) => {
@@ -158,9 +159,22 @@ export default function AdminLogin() {
                     }}
                     maxLength={4}
                     disabled={isLoading}
-                    className="pl-10"
+                    className="pl-10 pr-10"
                     inputMode="numeric"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPin(!showPin)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+                    disabled={isLoading}
+                    title={showPin ? "Hide PIN" : "Show PIN"}
+                  >
+                    {showPin ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
                 <p className="text-xs text-slate-500 mt-2">
                   Enter your 4-digit PIN
