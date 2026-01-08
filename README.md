@@ -252,8 +252,6 @@ pnpm start
 - `GET /api/grievances` - Fetch all grievances (with optional filters)
 - `GET /api/grievances/:id` - Get single grievance details
 - `GET /api/grievances/stats` - Get dashboard statistics
-- `GET /api/ping` - Health check
-- `GET /api/demo` - Demo endpoint
 
 ## 🎨 UI/UX Features
 
@@ -284,15 +282,6 @@ pnpm start
   - Urgency: Red (High), Yellow (Medium), Green (Low)
   - Sentiment: Red (Angry), Yellow (Distressed), Gray (Neutral)
 - Responsive grid layout
-
-## 🔐 Security Considerations
-
-- **Environment Variables**: Never commit `.env` files
-- **API Keys**: Use server-side only (not exposed to client)
-- **CORS**: Configured appropriately
-- **Input Validation**: Both frontend and backend
-- **XSS Protection**: React escapes content automatically
-- **SQL Injection**: Using Firestore (NoSQL, safer by design)
 
 ## 📊 Data Model
 
@@ -522,14 +511,6 @@ rm -rf dist
 pnpm build
 ```
 
-## 📞 Support & Contribution
-
-For issues, questions, or contributions:
-
-1. Check existing issues in repository
-2. Create detailed bug report with reproduction steps
-3. Submit pull requests with improvements
-4. Follow the existing code style and conventions
 
 ## 📄 License
 
@@ -556,7 +537,7 @@ This project is provided as-is for educational and institutional use.
 - Built with Google Gemini AI for intelligent analysis
 - Firebase Firestore for reliable data storage
 - React and modern web technologies
-- Community feedback and contributions
+- Project for Techsprint GDG on campus
 
 ---
 
