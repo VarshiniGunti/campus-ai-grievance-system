@@ -31,7 +31,7 @@ A full-stack grievance management platform that enables students to submit campu
 
 ### Theme
 
-AI for Learning & Developer Productivity / AI for Digital Experiences (TechSprint)
+Open Innovation : Identify and solve real-world problems relevant to their campus or local community by building innovative solutions using Google technologies.
 
 ### One-line Pitch
 
