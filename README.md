@@ -17,7 +17,6 @@ A full-stack grievance management platform that enables students to submit campu
 * [System Architecture](#system-architecture)
 * [Application Flow](#application-flow)
 * [Project Structure](#project-structure)
-* [Screenshots](#screenshots)
 * [Setup Instructions](#setup-instructions)
 * [Firebase Setup](#firebase-setup)
 * [Security Notes](#security-notes)
@@ -239,34 +238,6 @@ root/
 │── vite.config.ts
 │── netlify.toml
 ```
-
----
-
-## Screenshots
-
-### Home Page
-
-**Hero Section**
-
-**How It Works**
-
-**Powered By**
-
----
-
-### Student Portal
-
-**Submission Form**
-
----
-
-### Admin Portal
-
-**Admin Login**
-
-**Admin Dashboard**
-
-**Expanded Grievance View**
 
 ---
 
