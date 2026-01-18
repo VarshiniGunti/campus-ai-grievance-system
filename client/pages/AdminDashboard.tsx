@@ -15,10 +15,8 @@ import {
   ArrowLeft,
   BarChart3,
   Loader2,
-  AlertCircle,
   MessageSquare,
   TrendingUp,
-  Filter,
   LogOut,
   Search,
   Trash2,
@@ -28,18 +26,38 @@ import {
 import { toast } from "sonner";
 import { logoutAdmin, getAuthenticatedAdmin } from "@/utils/admin-auth";
 
+// Firebase Firestore functions
+import {
+  fetchGrievances,
+  fetchGrievanceById,
+  updateGrievanceStatus,
+  deleteGrievance,
+} from "@/config/firebase";
+
+interface AttachmentFile {
+  name: string;
+  type: string;
+  size: number;
+  base64?: string; 
+  url?: string;    
+}
+
 interface Grievance {
   id: string;
   studentName: string;
   studentEmail: string;
   complaint: string;
-  category: string;
-  urgency: string;
-  sentiment: string;
-  summary: string;
-  status: "submitted" | "viewed" | "cleared";
-  createdAt: string;
-  updatedAt: string;
+
+  category?: string;
+  urgency?: string;
+  sentiment?: string;
+  summary?: string;
+
+  status?: "submitted" | "viewed" | "cleared";
+  attachments?: AttachmentFile[];
+
+  createdAt: Date;
+  updatedAt?: Date;
 }
 
 interface Statistics {
@@ -54,19 +72,25 @@ type FilterType = "category" | "urgency" | "status" | "date" | "none";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const authenticatedAdmin = getAuthenticatedAdmin();
+
   const [grievances, setGrievances] = useState<Grievance[]>([]);
   const [stats, setStats] = useState<Statistics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
   const [filterType, setFilterType] = useState<FilterType>("none");
   const [filterValue, setFilterValue] = useState<string>("");
+
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
   const [searchId, setSearchId] = useState<string>("");
   const [searchLoading, setSearchLoading] = useState(false);
+
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
+
   const [showStatusModal, setShowStatusModal] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string>("");
-  const authenticatedAdmin = getAuthenticatedAdmin();
 
   const categories = [
     "Hostel",
@@ -83,25 +107,49 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [grievancesRes, statsRes] = await Promise.all([
-        fetch("/api/grievances"),
-        fetch("/api/grievances/stats"),
-      ]);
+      const grievancesData: any[] = await fetchGrievances();
 
-      if (!grievancesRes.ok || !statsRes.ok) {
-        throw new Error("Failed to fetch data");
-      }
+      const normalized: Grievance[] = grievancesData.map((g: any) => ({
+        ...g,
+        status: g.status || "submitted",
+        category: g.category || "Other",
+        urgency: g.urgency || "Low",
+        sentiment: g.sentiment || "Neutral",
+        summary: g.summary || "No AI summary available yet.",
+        attachments: g.attachments || [],
+      }));
 
-      const grievancesData = await grievancesRes.json();
-      const statsData = await statsRes.json();
+      setGrievances(normalized);
 
-      setGrievances(grievancesData.grievances || []);
-      setStats(statsData);
+      // ✅ stats calculation
+      const computedStats: Statistics = {
+        total: normalized.length,
+        byCategory: {},
+        byUrgency: {},
+        bySentiment: {},
+        byStatus: {},
+      };
+
+      normalized.forEach((g) => {
+        const cat = g.category || "Other";
+        const urg = g.urgency || "Low";
+        const sen = g.sentiment || "Neutral";
+        const st = g.status || "submitted";
+
+        computedStats.byCategory[cat] = (computedStats.byCategory[cat] || 0) + 1;
+        computedStats.byUrgency[urg] = (computedStats.byUrgency[urg] || 0) + 1;
+        computedStats.bySentiment[sen] =
+          (computedStats.bySentiment[sen] || 0) + 1;
+        computedStats.byStatus![st] = (computedStats.byStatus![st] || 0) + 1;
+      });
+
+      setStats(computedStats);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to load data";
@@ -120,14 +168,22 @@ export default function AdminDashboard() {
 
     setSearchLoading(true);
     try {
-      const response = await fetch(`/api/grievances/search/${searchId.trim()}`);
-      if (!response.ok) {
-        throw new Error("Grievance not found");
-      }
-      const result = await response.json();
-      setGrievances([result.grievance]);
+      const result: any = await fetchGrievanceById(searchId.trim());
+      if (!result) throw new Error("Not found");
+
+      const normalized: Grievance = {
+        ...result,
+        status: result.status || "submitted",
+        category: result.category || "Other",
+        urgency: result.urgency || "Low",
+        sentiment: result.sentiment || "Neutral",
+        summary: result.summary || "No summary available",
+        attachments: result.attachments || [],
+      };
+
+      setGrievances([normalized]);
       toast.success("Grievance found!");
-    } catch (error) {
+    } catch {
       toast.error("Grievance not found with this ID");
       setGrievances([]);
     } finally {
@@ -145,25 +201,14 @@ export default function AdminDashboard() {
     status: "viewed" | "cleared",
   ) => {
     try {
-      const response = await fetch(`/api/grievances/${grievanceId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, message: statusMessage }),
-      });
+      await updateGrievanceStatus(grievanceId, status, statusMessage);
 
-      if (!response.ok) {
-        throw new Error("Failed to update status");
-      }
-
-      const result = await response.json();
-      toast.success(
-        `Grievance marked as ${status}. ${result.emailNotificationSent ? "✉️ Email sent to student." : ""}`,
-      );
+      toast.success(`Grievance marked as ${status}`);
 
       setShowStatusModal(null);
       setStatusMessage("");
       fetchData();
-    } catch (error) {
+    } catch {
       toast.error("Failed to update status");
     }
   };
@@ -178,33 +223,22 @@ export default function AdminDashboard() {
     }
 
     try {
-      const response = await fetch(`/api/grievances/${grievanceId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete grievance");
-      }
-
+      await deleteGrievance(grievanceId);
       toast.success("Grievance deleted successfully");
       fetchData();
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete grievance");
     }
   };
 
   const filteredGrievances = grievances.filter((g) => {
-    if (filterType === "category" && filterValue) {
-      return g.category === filterValue;
-    }
-    if (filterType === "urgency" && filterValue) {
-      return g.urgency === filterValue;
-    }
-    if (filterType === "status" && filterValue) {
-      return g.status === filterValue;
-    }
+    if (filterType === "category" && filterValue) return g.category === filterValue;
+    if (filterType === "urgency" && filterValue) return g.urgency === filterValue;
+    if (filterType === "status" && filterValue) return g.status === filterValue;
+
     if (filterType === "date" && (startDate || endDate)) {
-      const gDate = new Date(g.createdAt);
+      const gDate = g.createdAt ? new Date(g.createdAt) : new Date();
+
       if (startDate) {
         const start = new Date(startDate);
         if (gDate < start) return false;
@@ -216,10 +250,11 @@ export default function AdminDashboard() {
       }
       return true;
     }
+
     return true;
   });
 
-  const getUrgencyColor = (urgency: string) => {
+  const getUrgencyColor = (urgency?: string) => {
     switch (urgency) {
       case "High":
         return "bg-destructive/10 text-destructive border-destructive/20";
@@ -232,7 +267,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const getSentimentColor = (sentiment: string) => {
+  const getSentimentColor = (sentiment?: string) => {
     switch (sentiment) {
       case "Angry":
         return "bg-destructive/10 text-destructive";
@@ -245,7 +280,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = (category?: string) => {
     const colors: Record<string, string> = {
       Hostel: "bg-blue-100 text-blue-800",
       Academics: "bg-purple-100 text-purple-800",
@@ -255,10 +290,10 @@ export default function AdminDashboard() {
       Health: "bg-pink-100 text-pink-800",
       Other: "bg-slate-100 text-slate-800",
     };
-    return colors[category] || "bg-slate-100 text-slate-800";
+    return colors[category || "Other"] || "bg-slate-100 text-slate-800";
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
       case "submitted":
         return "bg-blue-100 text-blue-800";
@@ -289,12 +324,14 @@ export default function AdminDashboard() {
             <ArrowLeft className="w-5 h-5 text-slate-600" />
             <span className="font-semibold text-slate-900">Back</span>
           </Link>
+
           <div className="flex items-center gap-2">
             <BarChart3 className="w-6 h-6 text-primary" />
             <span className="text-sm text-slate-600 font-semibold">
               Admin Dashboard
             </span>
           </div>
+
           <div className="flex items-center gap-3 ml-auto">
             {authenticatedAdmin && (
               <span className="text-sm text-slate-600 hidden sm:inline">
@@ -304,6 +341,7 @@ export default function AdminDashboard() {
                 </span>
               </span>
             )}
+
             <Button
               onClick={fetchData}
               variant="outline"
@@ -316,6 +354,7 @@ export default function AdminDashboard() {
                 "Refresh"
               )}
             </Button>
+
             <Button
               onClick={handleLogout}
               variant="destructive"
@@ -337,7 +376,7 @@ export default function AdminDashboard() {
             Grievance Dashboard
           </h1>
           <p className="text-lg text-slate-600">
-            View and manage all campus grievances with AI-powered insights
+            View and manage all campus grievances with Firebase
           </p>
         </div>
 
@@ -392,7 +431,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Search Section */}
+        {/* Search */}
         <Card className="p-6 border-slate-200 mb-8">
           <form onSubmit={handleSearch} className="flex gap-3">
             <div className="flex-1">
@@ -402,16 +441,12 @@ export default function AdminDashboard() {
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="e.g., grievance_1234567890_abc123"
+                  placeholder="Paste Firestore document ID"
                   value={searchId}
                   onChange={(e) => setSearchId(e.target.value)}
                   disabled={searchLoading}
                 />
-                <Button
-                  type="submit"
-                  disabled={searchLoading}
-                  className="gap-2"
-                >
+                <Button type="submit" disabled={searchLoading} className="gap-2">
                   {searchLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
@@ -493,7 +528,7 @@ export default function AdminDashboard() {
                     <SelectValue placeholder="Choose urgency..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {urgencies.map((urg) => (
+                    {["Low", "Medium", "High"].map((urg) => (
                       <SelectItem key={urg} value={urg}>
                         {urg}
                       </SelectItem>
@@ -565,7 +600,7 @@ export default function AdminDashboard() {
           </div>
         </Card>
 
-        {/* Grievances List */}
+        {/* Grievances */}
         {isLoading ? (
           <Card className="p-12 text-center border-slate-200">
             <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary mb-4" />
@@ -595,7 +630,6 @@ export default function AdminDashboard() {
                 }
               >
                 <div className="flex flex-col gap-4">
-                  {/* Header Row */}
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-semibold text-slate-900 truncate">
@@ -605,7 +639,7 @@ export default function AdminDashboard() {
                         {grievance.studentEmail}
                       </p>
                       <p className="text-xs text-slate-400 mt-1">
-                        {new Date(grievance.createdAt).toLocaleString()}
+                        {grievance.createdAt?.toLocaleString()}
                       </p>
                     </div>
 
@@ -628,14 +662,12 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* Summary Row */}
                   <div className="bg-slate-50 p-4 rounded-lg">
                     <p className="text-sm text-slate-700 line-clamp-2">
                       {grievance.summary}
                     </p>
                   </div>
 
-                  {/* Sentiment Badge */}
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-slate-600">
                       Sentiment:
@@ -647,7 +679,6 @@ export default function AdminDashboard() {
                     </Badge>
                   </div>
 
-                  {/* Expanded Content */}
                   {expandedId === grievance.id && (
                     <div className="border-t pt-4 mt-4 space-y-4">
                       <div>
@@ -659,59 +690,54 @@ export default function AdminDashboard() {
                         </p>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="bg-blue-50 p-4 rounded-lg">
-                          <p className="text-xs text-slate-600 font-semibold mb-1">
-                            CATEGORY
+                      {/* ✅ Attachments */}
+                      {grievance.attachments?.length > 0 && (
+                        <div>
+                          <p className="text-xs font-semibold text-slate-600 mb-2">
+                            ATTACHMENTS ({grievance.attachments.length})
                           </p>
-                          <p className="text-lg font-bold text-blue-900">
-                            {grievance.category}
-                          </p>
-                        </div>
-                        <div
-                          className={`p-4 rounded-lg ${
-                            grievance.urgency === "High"
-                              ? "bg-destructive/10"
-                              : grievance.urgency === "Medium"
-                                ? "bg-warning/10"
-                                : "bg-success/10"
-                          }`}
-                        >
-                          <p className="text-xs text-slate-600 font-semibold mb-1">
-                            URGENCY
-                          </p>
-                          <p
-                            className={`text-lg font-bold ${
-                              grievance.urgency === "High"
-                                ? "text-destructive"
-                                : grievance.urgency === "Medium"
-                                  ? "text-warning"
-                                  : "text-success"
-                            }`}
-                          >
-                            {grievance.urgency}
-                          </p>
-                        </div>
-                        <div
-                          className={`p-4 rounded-lg ${getSentimentColor(grievance.sentiment)}`}
-                        >
-                          <p className="text-xs text-slate-600 font-semibold mb-1">
-                            SENTIMENT
-                          </p>
-                          <p className="text-lg font-bold">
-                            {grievance.sentiment}
-                          </p>
-                        </div>
-                      </div>
 
-                      <div>
-                        <p className="text-xs font-semibold text-slate-600 mb-2">
-                          ADMIN SUMMARY
-                        </p>
-                        <p className="text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-200">
-                          {grievance.summary}
-                        </p>
-                      </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {grievance.attachments.map((file, idx) => (
+                              <div
+                                key={idx}
+                                className="border rounded-lg p-2 bg-white"
+                              >
+                                <p className="text-xs text-slate-600 truncate">
+                                  {file.name}
+                                </p>
+
+                               {file.type.startsWith("image/") ? (
+  <img
+    src={file.base64 || file.url}
+    alt={file.name}
+    className="mt-2 w-full rounded-md border"
+  />
+) : file.type.startsWith("video/") ? (
+  <video
+    controls
+    className="mt-2 w-full rounded-md border"
+  >
+    <source
+      src={file.base64 || file.url}
+      type={file.type}
+    />
+  </video>
+) : (
+  <a
+    href={file.base64 || file.url}
+    target="_blank"
+    rel="noreferrer"
+    className="text-blue-600 underline text-sm mt-2 inline-block"
+  >
+    View / Download
+  </a>
+)}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                       <div className="bg-slate-50 p-4 rounded-lg">
                         <p className="text-xs font-semibold text-slate-600 mb-2">
@@ -737,6 +763,7 @@ export default function AdminDashboard() {
                             Mark as Viewed
                           </Button>
                         )}
+
                         {grievance.status !== "cleared" && (
                           <Button
                             size="sm"
@@ -751,6 +778,7 @@ export default function AdminDashboard() {
                             Mark as Cleared
                           </Button>
                         )}
+
                         <Button
                           size="sm"
                           variant="destructive"
@@ -767,7 +795,6 @@ export default function AdminDashboard() {
                     </div>
                   )}
 
-                  {/* Expand Indicator */}
                   <p className="text-xs text-primary text-center mt-2">
                     {expandedId === grievance.id
                       ? "Click to collapse"
@@ -776,13 +803,6 @@ export default function AdminDashboard() {
                 </div>
               </Card>
             ))}
-
-            <div className="text-center pt-4">
-              <p className="text-sm text-slate-600">
-                Showing {filteredGrievances.length} of {grievances.length}{" "}
-                grievances
-              </p>
-            </div>
           </div>
         )}
 
@@ -794,19 +814,21 @@ export default function AdminDashboard() {
                 Mark as{" "}
                 {showStatusModal.includes("-clear") ? "Cleared" : "Viewed"}
               </h3>
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-slate-900 mb-2">
-                    Optional Message (will be sent to student)
+                    Optional Message
                   </label>
                   <textarea
                     value={statusMessage}
                     onChange={(e) => setStatusMessage(e.target.value)}
-                    placeholder="e.g., Issue has been resolved. Please contact if you need further assistance."
+                    placeholder="Optional message for student..."
                     className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     rows={3}
                   />
                 </div>
+
                 <div className="flex gap-2">
                   <Button
                     onClick={() =>
@@ -821,6 +843,7 @@ export default function AdminDashboard() {
                   >
                     Confirm
                   </Button>
+
                   <Button
                     variant="outline"
                     onClick={() => setShowStatusModal(null)}

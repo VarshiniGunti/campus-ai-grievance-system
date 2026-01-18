@@ -149,9 +149,9 @@ export default function Homepage() {
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-semibold">Get Confirmation</h4>
+                    <h4 className="font-semibold">Attach Proof</h4>
                     <p className="text-slate-300">
-                      Receive immediate acknowledgment of your submission
+                      Upload images/videos to support your grievance
                     </p>
                   </div>
                 </div>
@@ -163,9 +163,9 @@ export default function Homepage() {
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-semibold">Track Resolution</h4>
+                    <h4 className="font-semibold">Get Confirmation</h4>
                     <p className="text-slate-300">
-                      Follow the status of your grievance in real-time
+                      Receive an instant confirmation with a unique Grievance ID
                     </p>
                   </div>
                 </div>
@@ -217,8 +217,7 @@ export default function Homepage() {
                   <div>
                     <h4 className="font-semibold">Advanced Filtering</h4>
                     <p className="text-slate-300">
-                      Filter by category, urgency, and sentiment for focused
-                      action
+                      Mark grievances as Viewed/Cleared or delete them for efficient handling
                     </p>
                   </div>
                 </div>
@@ -241,7 +240,7 @@ export default function Homepage() {
                 <Brain className="w-12 h-12 text-primary flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 mb-2">
-                    Google Gemini AI
+                    Google Gemini AI (Demo mode)
                   </h3>
                   <p className="text-slate-600">
                     Advanced language model for understanding student grievances
@@ -257,7 +256,7 @@ export default function Homepage() {
                 <Shield className="w-12 h-12 text-accent flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 mb-2">
-                    Firebase Firestore
+                    Firebase Firestore (Live)
                   </h3>
                   <p className="text-slate-600">
                     Scalable, real-time database for secure storage of
@@ -277,10 +276,10 @@ export default function Homepage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <h4 className="text-white font-bold mb-4">
-                Campus AI Grievance System
+                Campus AI Grievance System by Varshini
               </h4>
               <p className="text-sm">
-                Transforming campus feedback into actionable intelligence
+                Transforming campus feedback into actionable intelligence using google technologies
               </p>
             </div>
             <div>
@@ -313,7 +312,7 @@ export default function Homepage() {
             </div>
           </div>
           <div className="border-t border-slate-800 pt-8 text-center text-sm">
-            <p>© 2024 Campus AI Grievance System. All rights reserved.</p>
+            <p>© 2026 Campus AI Grievance System. All rights reserved.</p>
           </div>
         </div>
       </footer>

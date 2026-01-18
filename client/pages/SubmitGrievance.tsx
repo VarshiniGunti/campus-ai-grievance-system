@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { submitGrievance } from "@/config/firebase";
+import { useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +14,6 @@ import {
   Upload,
   X,
   Image,
-  Video,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,45 +27,142 @@ interface UploadedFile {
   name: string;
   type: string;
   size: number;
-  preview?: string;
+  preview?: string; // base64
 }
 
 interface SubmissionResult {
   success: boolean;
   grievanceId?: string;
-  analysis?: {
-    category: string;
-    urgency: string;
-    sentiment: string;
-    summary: string;
-  };
   error?: string;
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/gif",
-  "video/mp4",
-  "video/webm",
-];
+const MAX_IMAGE_SIZE = 200 * 1024; // ✅ 200KB (Firestore safe)
+const MAX_FILES = 5;
+
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif"];
+
+/* -----------------------------------------
+ ✅ Local AI Analyzer (No Gemini key needed)
+------------------------------------------ */
+function localAnalyzeComplaint(text: string) {
+  const t = text.toLowerCase();
+
+  // CATEGORY
+  let category = "Other";
+
+  if (t.includes("hostel") || t.includes("room") || t.includes("warden")) {
+    category = "Hostel";
+  } else if (t.includes("mess") || t.includes("food") || t.includes("rice")) {
+    category = "Mess";
+  } else if (
+    t.includes("exam") ||
+    t.includes("attendance") ||
+    t.includes("class") ||
+    t.includes("teacher") ||
+    t.includes("grades")
+  ) {
+    category = "Academics";
+  } else if (
+    t.includes("wifi") ||
+    t.includes("internet") ||
+    t.includes("electricity") ||
+    t.includes("water") ||
+    t.includes("lift") ||
+    t.includes("projector") ||
+    t.includes("fan") ||
+    t.includes("power")
+  ) {
+    category = "Infrastructure";
+  } else if (
+    t.includes("unsafe") ||
+    t.includes("harassment") ||
+    t.includes("theft") ||
+    t.includes("security") ||
+    t.includes("fight") ||
+    t.includes("threat")
+  ) {
+    category = "Safety";
+  } else if (
+    t.includes("health") ||
+    t.includes("doctor") ||
+    t.includes("medicine") ||
+    t.includes("hospital") ||
+    t.includes("fever") ||
+    t.includes("injury")
+  ) {
+    category = "Health";
+  }
+
+  // URGENCY
+  let urgency: "Low" | "Medium" | "High" = "Low";
+
+  if (
+    t.includes("urgent") ||
+    t.includes("immediately") ||
+    t.includes("emergency") ||
+    t.includes("danger") ||
+    t.includes("serious") ||
+    t.includes("accident")
+  ) {
+    urgency = "High";
+  } else if (
+    t.includes("soon") ||
+    t.includes("not working") ||
+    t.includes("issue") ||
+    t.includes("problem") ||
+    t.includes("delay")
+  ) {
+    urgency = "Medium";
+  }
+
+  // SENTIMENT
+  let sentiment: "Neutral" | "Angry" | "Distressed" = "Neutral";
+  if (
+    t.includes("frustrated") ||
+    t.includes("angry") ||
+    t.includes("worst") ||
+    t.includes("very bad") ||
+    t.includes("annoyed")
+  ) {
+    sentiment = "Angry";
+  }
+  if (
+    t.includes("scared") ||
+    t.includes("unsafe") ||
+    t.includes("panic") ||
+    t.includes("distressed") ||
+    t.includes("cry")
+  ) {
+    sentiment = "Distressed";
+  }
+
+  // SUMMARY
+  const summary =
+    text.length > 120 ? text.slice(0, 120).trim() + "..." : text.trim();
+
+  return { category, urgency, sentiment, summary };
+}
 
 export default function SubmitGrievance() {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
     studentName: "",
     studentEmail: "",
     complaint: "",
   });
+
+  // ✅ UI + base64 stored here
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submissionResult, setSubmissionResult] =
     useState<SubmissionResult | null>(null);
+
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({});
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -96,68 +193,65 @@ export default function SubmitGrievance() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
     if (validationErrors[name]) {
       setValidationErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ✅ Convert file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // ✅ Upload handler (Firestore base64 attachments only)
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.currentTarget.files;
     if (!files) return;
 
-    const newFiles: UploadedFile[] = [];
+    const pickedFiles = Array.from(files);
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+    for (const file of pickedFiles) {
+      // ✅ Only images allowed for Firestore
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        toast.error("Only images are supported in demo mode (JPG/PNG/GIF).");
+        continue;
+      }
 
-      // Validate file type
-      if (!ALLOWED_TYPES.includes(file.type)) {
+      // ✅ Size safety for Firestore doc limit
+      if (file.size > MAX_IMAGE_SIZE) {
         toast.error(
-          `File type not allowed: ${file.name}. Please use JPG, PNG, GIF, MP4, or WebM.`,
+          `${file.name} is too large. Please upload images under 200KB.`,
         );
         continue;
       }
 
-      // Validate file size
-      if (file.size > MAX_FILE_SIZE) {
-        toast.error(`File too large: ${file.name}. Maximum size is 5MB.`);
-        continue;
-      }
-
-      // Check total files
-      if (uploadedFiles.length + newFiles.length >= 5) {
-        toast.error("Maximum 5 files allowed per grievance");
+      // ✅ Limit max attachments
+      if (uploadedFiles.length >= MAX_FILES) {
+        toast.error(`Maximum ${MAX_FILES} images allowed`);
         break;
       }
 
-      // Create preview for images
-      let preview: string | undefined;
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          preview = e.target?.result as string;
-          const fileToAdd = { ...newFiles[i], preview };
-          setUploadedFiles((prev) => [...prev, fileToAdd]);
-        };
-        reader.readAsDataURL(file);
-      }
+      // convert to base64
+      const base64 = await fileToBase64(file);
 
-      newFiles.push({
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        preview,
-      });
-    }
-
-    if (newFiles.length > 0 && !newFiles[0].preview) {
       setUploadedFiles((prev) => [
         ...prev,
-        ...newFiles.filter((f) => f.type.startsWith("video/")),
+        {
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          preview: base64,
+        },
       ]);
     }
 
-    toast.success(`${newFiles.length} file(s) added`);
+    toast.success("Image(s) added");
     e.currentTarget.value = "";
   };
 
@@ -165,6 +259,7 @@ export default function SubmitGrievance() {
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // ✅ Submit grievance to Firestore with base64 attachments + local AI
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -176,31 +271,34 @@ export default function SubmitGrievance() {
     setIsLoading(true);
 
     try {
-      // Create FormData with files
-      const submitData = new FormData();
-      submitData.append("studentName", formData.studentName);
-      submitData.append("studentEmail", formData.studentEmail);
-      submitData.append("complaint", formData.complaint);
+      // ✅ AI Analysis (local rule-based)
+      const analysis = localAnalyzeComplaint(formData.complaint);
 
-      // Note: In a real app, you would append actual File objects here
-      // For now, we're just sending metadata
-      submitData.append("attachmentCount", uploadedFiles.length.toString());
+      const grievanceId = await submitGrievance({
+        studentName: formData.studentName,
+        studentEmail: formData.studentEmail,
+        complaint: formData.complaint,
 
-      const response = await fetch("/api/grievances", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+        // ✅ Save AI fields in Firestore
+        category: analysis.category,
+        urgency: analysis.urgency,
+        sentiment: analysis.sentiment,
+        summary: analysis.summary,
+
+        // ✅ attachments in Firestore (base64)
+        attachments: uploadedFiles.map((f) => ({
+          name: f.name,
+          type: f.type,
+          size: f.size,
+          base64: f.preview || "",
+        })),
+      } as any);
+
+      setSubmissionResult({
+        success: true,
+        grievanceId,
       });
 
-      const result: SubmissionResult = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to submit grievance");
-      }
-
-      setSubmissionResult(result);
       setSubmitted(true);
       toast.success("Grievance submitted successfully!");
 
@@ -251,13 +349,13 @@ export default function SubmitGrievance() {
               </h1>
               <p className="text-lg text-slate-600">
                 Share your concern or complaint with us. You can optionally
-                attach images or videos to support your grievance.
+                attach images to support your grievance.
               </p>
             </div>
 
             <Card className="p-8 border-slate-200 shadow-lg">
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Name Field */}
+                {/* Name */}
                 <div>
                   <label
                     htmlFor="studentName"
@@ -284,7 +382,7 @@ export default function SubmitGrievance() {
                   )}
                 </div>
 
-                {/* Email Field */}
+                {/* Email */}
                 <div>
                   <label
                     htmlFor="studentEmail"
@@ -312,7 +410,7 @@ export default function SubmitGrievance() {
                   )}
                 </div>
 
-                {/* Complaint Field */}
+                {/* Complaint */}
                 <div>
                   <label
                     htmlFor="complaint"
@@ -323,11 +421,13 @@ export default function SubmitGrievance() {
                   <Textarea
                     id="complaint"
                     name="complaint"
-                    placeholder="Describe your grievance in detail. Be as specific as possible to help us understand and resolve your concern..."
+                    placeholder="Describe your grievance in detail..."
                     value={formData.complaint}
                     onChange={handleInputChange}
                     rows={6}
-                    className={`resize-none ${validationErrors.complaint ? "border-destructive" : ""}`}
+                    className={`resize-none ${
+                      validationErrors.complaint ? "border-destructive" : ""
+                    }`}
                     disabled={isLoading}
                   />
                   <div className="flex justify-between mt-2">
@@ -342,76 +442,83 @@ export default function SubmitGrievance() {
                   </div>
                 </div>
 
-                {/* File Upload Field */}
+                {/* Upload Images */}
                 <div>
                   <label
                     htmlFor="files"
                     className="block text-sm font-semibold text-slate-900 mb-2"
                   >
-                    Attach Images or Videos{" "}
+                    Attach Images (Optional)
                     <span className="text-slate-500 font-normal">
-                      (Optional)
+                      {" "}
+                      – Demo mode stores images in Firestore
                     </span>
                   </label>
-                  <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-primary transition bg-slate-50 hover:bg-slate-100/50">
+
+                  <div
+                    className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-primary transition bg-slate-50 hover:bg-slate-100/50 cursor-pointer block"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
                     <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
                     <p className="text-sm text-slate-600 mb-2">
-                      Drag and drop your files here, or click to browse
+                      Click to browse images
                     </p>
+
                     <Input
+                      ref={fileInputRef}
                       id="files"
                       type="file"
                       multiple
-                      accept="image/jpeg,image/png,image/gif,video/mp4,video/webm"
+                      accept="image/jpeg,image/png,image/gif"
                       onChange={handleFileUpload}
                       disabled={isLoading}
                       className="hidden"
                     />
-                    <label htmlFor="files" className="inline-block">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={isLoading}
-                      >
-                        Choose Files
-                      </Button>
-                    </label>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={isLoading}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        fileInputRef.current?.click();
+                      }}
+                    >
+                      Choose Images
+                    </Button>
+
                     <p className="text-xs text-slate-500 mt-3">
-                      Max 5MB per file, up to 5 files. Formats: JPG, PNG, GIF,
-                      MP4, WebM
+                      Max 200KB per image, up to {MAX_FILES} images. Formats:
+                      JPG, PNG, GIF
                     </p>
                   </div>
                 </div>
 
-                {/* Uploaded Files Preview */}
+                {/* Preview */}
                 {uploadedFiles.length > 0 && (
                   <div>
                     <p className="text-sm font-semibold text-slate-900 mb-3">
-                      Attached Files ({uploadedFiles.length})
+                      Attached Images ({uploadedFiles.length})
                     </p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {uploadedFiles.map((file, index) => (
                         <div key={index} className="relative group">
-                          {file.type.startsWith("image/") ? (
-                            <div className="bg-slate-100 rounded-lg overflow-hidden aspect-square">
-                              {file.preview ? (
-                                <img
-                                  src={file.preview}
-                                  alt={file.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="flex items-center justify-center w-full h-full">
-                                  <Image className="w-6 h-6 text-slate-400" />
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="bg-slate-100 rounded-lg aspect-square flex items-center justify-center">
-                              <Video className="w-6 h-6 text-slate-400" />
-                            </div>
-                          )}
+                          <div className="bg-slate-100 rounded-lg overflow-hidden aspect-square">
+                            {file.preview ? (
+                              <img
+                                src={file.preview}
+                                alt={file.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex items-center justify-center w-full h-full">
+                                <Image className="w-6 h-6 text-slate-400" />
+                              </div>
+                            )}
+                          </div>
+
                           <button
                             type="button"
                             onClick={() => removeFile(index)}
@@ -420,6 +527,7 @@ export default function SubmitGrievance() {
                           >
                             <X className="w-4 h-4" />
                           </button>
+
                           <p className="text-xs text-slate-600 mt-1 truncate">
                             {file.name}
                           </p>
@@ -429,7 +537,7 @@ export default function SubmitGrievance() {
                   </div>
                 )}
 
-                {/* Action Buttons */}
+                {/* Buttons */}
                 <div className="flex gap-4 pt-4">
                   <Button
                     type="submit"
@@ -445,6 +553,7 @@ export default function SubmitGrievance() {
                       "Submit Grievance"
                     )}
                   </Button>
+
                   <Button
                     type="button"
                     variant="outline"
@@ -465,20 +574,18 @@ export default function SubmitGrievance() {
               </form>
             </Card>
 
-            {/* Info Alert */}
+            {/* Info */}
             <Alert className="mt-8 border-accent/20 bg-accent/5">
               <AlertCircle className="h-4 w-4 text-accent" />
               <AlertTitle>Why be specific?</AlertTitle>
               <AlertDescription>
                 The more details and supporting evidence you provide, the better
-                our AI system can understand and categorize your grievance,
-                leading to faster resolution.
+                our system can understand and resolve your concern.
               </AlertDescription>
             </Alert>
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Success Message */}
             <Card className="p-8 border-success/20 bg-success/5 border-2">
               <div className="flex items-start gap-4 mb-6">
                 <CheckCircle2 className="w-8 h-8 text-success flex-shrink-0 mt-1" />
@@ -487,133 +594,23 @@ export default function SubmitGrievance() {
                     Grievance Submitted Successfully!
                   </h2>
                   <p className="text-slate-600">
-                    Your grievance has been received
-                    {uploadedFiles.length > 0 &&
-                      ` with ${uploadedFiles.length} attachment(s)`}{" "}
-                    and our AI system is analyzing it right now.
+                    Your grievance has been received.
                   </p>
                 </div>
               </div>
             </Card>
 
-            {/* Grievance ID */}
             {submissionResult?.grievanceId && (
               <Card className="p-6 border-slate-200">
-                <div className="mb-2">
-                  <p className="text-sm text-slate-600 font-medium">
-                    Your Grievance ID
-                  </p>
-                </div>
+                <p className="text-sm text-slate-600 font-medium mb-2">
+                  Your Grievance ID
+                </p>
                 <p className="font-mono text-lg text-primary bg-slate-100 p-4 rounded-lg break-all">
                   {submissionResult.grievanceId}
                 </p>
-                <p className="text-sm text-slate-600 mt-3">
-                  Keep this ID for your reference. You can use it to track your
-                  grievance.
-                </p>
               </Card>
             )}
 
-            {/* AI Analysis Results */}
-            {submissionResult?.analysis && (
-              <Card className="p-8 border-slate-200">
-                <h3 className="text-xl font-bold text-slate-900 mb-6">
-                  AI Analysis Results
-                </h3>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-slate-50 p-4 rounded-lg">
-                    <p className="text-xs text-slate-600 font-semibold uppercase mb-1">
-                      Category
-                    </p>
-                    <p className="text-lg font-bold text-primary">
-                      {submissionResult.analysis.category}
-                    </p>
-                  </div>
-
-                  <div className="bg-slate-50 p-4 rounded-lg">
-                    <p className="text-xs text-slate-600 font-semibold uppercase mb-1">
-                      Urgency
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`inline-block w-2 h-2 rounded-full ${
-                          submissionResult.analysis.urgency === "High"
-                            ? "bg-destructive"
-                            : submissionResult.analysis.urgency === "Medium"
-                              ? "bg-warning"
-                              : "bg-success"
-                        }`}
-                      ></span>
-                      <p className="text-lg font-bold text-slate-900">
-                        {submissionResult.analysis.urgency}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-50 p-4 rounded-lg">
-                    <p className="text-xs text-slate-600 font-semibold uppercase mb-1">
-                      Sentiment
-                    </p>
-                    <p className="text-lg font-bold text-slate-900">
-                      {submissionResult.analysis.sentiment}
-                    </p>
-                  </div>
-
-                  <div className="bg-slate-50 p-4 rounded-lg">
-                    <p className="text-xs text-slate-600 font-semibold uppercase mb-1">
-                      Status
-                    </p>
-                    <p className="text-lg font-bold text-success">Submitted</p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 p-6 rounded-lg">
-                  <p className="text-sm text-slate-600 font-semibold mb-2 uppercase">
-                    Summary for Admin
-                  </p>
-                  <p className="text-slate-800 leading-relaxed">
-                    {submissionResult.analysis.summary}
-                  </p>
-                </div>
-              </Card>
-            )}
-
-            {/* Next Steps */}
-            <Card className="p-8 border-slate-200 bg-slate-50">
-              <h3 className="text-lg font-bold text-slate-900 mb-4">
-                What Happens Next?
-              </h3>
-              <ol className="space-y-3 text-slate-700">
-                <li className="flex gap-3">
-                  <span className="font-bold text-primary min-w-6">1.</span>
-                  <span>
-                    Our administrators will review your grievance using the
-                    AI-generated summary
-                  </span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="font-bold text-primary min-w-6">2.</span>
-                  <span>
-                    The grievance will be prioritized based on the urgency level
-                    (Low, Medium, High)
-                  </span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="font-bold text-primary min-w-6">3.</span>
-                  <span>
-                    You'll receive updates via email as your grievance is
-                    processed
-                  </span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="font-bold text-primary min-w-6">4.</span>
-                  <span>Once resolved, you'll be notified of the outcome</span>
-                </li>
-              </ol>
-            </Card>
-
-            {/* Action Buttons */}
             <div className="flex gap-4">
               <Link to="/" className="flex-1">
                 <Button variant="outline" className="w-full">

@@ -8,121 +8,194 @@ import {
   orderBy,
   Query,
   DocumentData,
+  serverTimestamp,
+  doc,
+  updateDoc,
+  deleteDoc,
+  getDoc,
 } from "firebase/firestore";
 
-// Firebase configuration
-// Replace these with your actual Firebase config from Firebase Console
+/* ---------------------------
+   Firebase Configuration
+---------------------------- */
 const firebaseConfig = {
-  apiKey:
-    import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForDevelopment",
-  authDomain:
-    import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ||
-    "campus-ai-grievance.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "campus-ai-grievance",
-  storageBucket:
-    import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ||
-    "campus-ai-grievance.appspot.com",
-  messagingSenderId:
-    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abc123def456",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID as string,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID as string,
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+/* ---------------------------
+   Initialize Firebase
+---------------------------- */
+export const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
+
+/* ---------------------------
+   Types
+---------------------------- */
+export interface AttachmentBase64 {
+  name: string;
+  type: string;
+  size: number;
+  base64: string; // ✅ actual data
+}
 
 export interface GrievanceData {
   id?: string;
+
   studentName: string;
   studentEmail: string;
   complaint: string;
+
   category?: string;
   urgency?: string;
   sentiment?: string;
   summary?: string;
+
+  status?: "submitted" | "viewed" | "cleared";
+  adminMessage?: string;
+
+  attachments?: AttachmentBase64[]; // ✅ base64 images stored in Firestore
+
   createdAt: Date;
   updatedAt?: Date;
 }
 
-export interface AIAnalysis {
-  category: string;
-  urgency: string;
-  sentiment: string;
-  summary: string;
-}
-
-/**
- * Submit a new grievance to Firestore
- */
+/* ---------------------------
+   Submit Grievance (Firestore only)
+---------------------------- */
 export async function submitGrievance(
-  grievanceData: Omit<GrievanceData, "id" | "createdAt">,
+  grievanceData: Omit<GrievanceData, "id" | "createdAt" | "updatedAt">,
 ): Promise<string> {
   try {
+    console.log("📝 Writing grievance to Firestore...");
+
     const docRef = await addDoc(collection(db, "grievances"), {
       ...grievanceData,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      status: "submitted",
+      adminMessage: "",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     });
+
+    console.log("✅ grievance saved:", docRef.id);
     return docRef.id;
   } catch (error) {
-    console.error("Error submitting grievance:", error);
+    console.error("❌ Error submitting grievance:", error);
     throw error;
   }
 }
 
-/**
- * Fetch all grievances from Firestore, ordered by creation date (newest first)
- */
+/* ---------------------------
+   Fetch All Grievances
+---------------------------- */
 export async function fetchGrievances(): Promise<GrievanceData[]> {
   try {
     const q: Query<DocumentData> = query(
       collection(db, "grievances"),
       orderBy("createdAt", "desc"),
     );
-    const querySnapshot = await getDocs(q);
-    const grievances: GrievanceData[] = [];
 
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      grievances.push({
-        id: doc.id,
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map((docSnap) => {
+      const data: any = docSnap.data();
+
+      return {
+        id: docSnap.id,
         studentName: data.studentName,
         studentEmail: data.studentEmail,
         complaint: data.complaint,
+
         category: data.category,
         urgency: data.urgency,
         sentiment: data.sentiment,
         summary: data.summary,
-        createdAt: data.createdAt?.toDate
-          ? data.createdAt.toDate()
-          : data.createdAt,
-        updatedAt: data.updatedAt?.toDate
-          ? data.updatedAt.toDate()
-          : data.updatedAt,
-      });
-    });
 
-    return grievances;
+        status: data.status || "submitted",
+        adminMessage: data.adminMessage || "",
+
+        attachments: data.attachments || [],
+
+        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+        updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : undefined,
+      };
+    });
   } catch (error) {
-    console.error("Error fetching grievances:", error);
+    console.error("❌ Error fetching grievances:", error);
     throw error;
   }
 }
 
-/**
- * Update grievance with AI analysis
- */
-export async function updateGrievanceWithAnalysis(
+/* ---------------------------
+   Fetch Single Grievance
+---------------------------- */
+export async function fetchGrievanceById(
   grievanceId: string,
-  analysis: AIAnalysis,
+): Promise<GrievanceData | null> {
+  try {
+    const snap = await getDoc(doc(db, "grievances", grievanceId));
+    if (!snap.exists()) return null;
+
+    const data: any = snap.data();
+
+    return {
+      id: snap.id,
+      studentName: data.studentName,
+      studentEmail: data.studentEmail,
+      complaint: data.complaint,
+
+      category: data.category,
+      urgency: data.urgency,
+      sentiment: data.sentiment,
+      summary: data.summary,
+
+      status: data.status || "submitted",
+      adminMessage: data.adminMessage || "",
+
+      attachments: data.attachments || [],
+
+      createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
+      updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : undefined,
+    };
+  } catch (error) {
+    console.error("❌ Error fetching grievance:", error);
+    throw error;
+  }
+}
+
+/* ---------------------------
+   Update Grievance Status
+---------------------------- */
+export async function updateGrievanceStatus(
+  grievanceId: string,
+  status: "submitted" | "viewed" | "cleared",
+  adminMessage?: string,
 ): Promise<void> {
   try {
-    // This would require firestore update function
-    // For now, the backend handles this
+    const grievanceRef = doc(db, "grievances", grievanceId);
+
+    await updateDoc(grievanceRef, {
+      status,
+      adminMessage: adminMessage || "",
+      updatedAt: serverTimestamp(),
+    });
   } catch (error) {
-    console.error("Error updating grievance:", error);
+    console.error("❌ Error updating grievance status:", error);
     throw error;
   }
 }
 
-export { db };
+/* ---------------------------
+   Delete Grievance
+---------------------------- */
+export async function deleteGrievance(grievanceId: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, "grievances", grievanceId));
+  } catch (error) {
+    console.error("❌ Error deleting grievance:", error);
+    throw error;
+  }
+}
