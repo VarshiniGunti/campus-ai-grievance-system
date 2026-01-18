@@ -7,11 +7,6 @@ A full-stack grievance management platform that enables students to submit campu
 
 ---
 
-## Live Demo
-
-- Web App: https://girevance-system.web.app/
----
-
 ## Table of Contents
 
 - [Overview](#overview)
