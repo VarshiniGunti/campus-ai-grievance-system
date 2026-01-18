@@ -1,182 +1,101 @@
 # Campus AI Grievance Intelligence System
 
-A full-stack grievance management platform that enables students to submit campus-related grievances and allows administrators to manage, track, and resolve them efficiently through a real-time dashboard. The system is built using Firebase Firestore for live persistence and includes a scalable backend architecture designed for AI-powered complaint analysis.
+A full-stack grievance management platform that enables students to submit campus-related concerns and helps administrators track, prioritize, and resolve them through a real-time dashboard. Built using Firebase Firestore for live persistence and designed with an extensible architecture for future AI-powered grievance analysis.
 
-**Built by:** *Varshini (IIT Bhilai)*
-**Event:** *TechSprint Hackathon – GDG On Campus, IIT Bhilai*
+**Author:** Varshini (IIT Bhilai)  
+**Developed for:** TechSprint Hackathon – GDG On Campus, IIT Bhilai  
 
+---
+
+## Live Demo
+
+- Web App: https://girevance-system.web.app/
 ---
 
 ## Table of Contents
 
-* [Hackathon Submission](#hackathon-submission)
-* [Overview](#overview)
-* [Problem Statement](#problem-statement)
-* [Solution](#solution)
-* [Key Features](#key-features)
-* [System Architecture](#system-architecture)
-* [Application Flow](#application-flow)
-* [Project Structure](#project-structure)
-* [Setup Instructions](#setup-instructions)
-* [Firebase Setup](#firebase-setup)
-* [Security Notes](#security-notes)
-* [Future Enhancements](#future-enhancements)
-* [Credits](#credits)
-* [License](#license)
-
----
-
-## Hackathon Submission
-
-### Theme
-
-Open Innovation : Identify and solve real-world problems relevant to their campus or local community by building innovative solutions using Google technologies.
-
-### One-line Pitch
-
-A real-time campus grievance platform that turns raw student complaints into structured, trackable cases with an admin dashboard for fast resolution and analytics.
-
-### What it solves
-
-In most campuses, grievances are:
-
-* unstructured (scattered messages/forms)
-* difficult to prioritize
-* not transparent to students
-* hard to track and audit
-
-This system introduces a structured pipeline where every complaint becomes a trackable case with optional AI-powered insights.
-
-### Why this is impactful
-
-* Improves response time by centralizing all grievances in one dashboard
-* Creates accountability using status transitions (Submitted → Viewed → Cleared)
-* Enables administration to quickly filter and prioritize urgent grievances
-* Provides scalable foundation for AI-driven summarization and categorization
-
-### Technical novelty
-
-* Firestore-backed real-time grievance management
-* Built-in admin workflow tooling (filters, analytics, status updates)
-* Attachment support designed to work even on free Firebase plans (Base64)
-* Architecture ready for plugging Gemini AI + notifications without redesign
-
-### Scalability
-
-* Firestore enables high read/write throughput for real-time dashboards
-* Server layer is modular: can add AI analysis + email notifications
-* Can extend to multiple institutions with role-based admin access
-
-### Demo Flow
-
-1. Student submits a grievance with optional attachments
-2. Firestore stores grievance + metadata
-3. Admin dashboard displays all grievances instantly
-4. Admin filters/searches grievances and updates status
-5. System updates Firestore and reflects changes in dashboard
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [System Architecture](#system-architecture)
+- [Application Flow](#application-flow)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Setup Instructions](#setup-instructions)
+- [Firebase Configuration](#firebase-configuration)
+- [Deployment (Firebase Hosting)](#deployment-firebase-hosting)
+- [Future Enhancements](#future-enhancements)
+- [Credits](#credits)
+- [License](#license)
 
 ---
 
 ## Overview
 
-Campus grievance handling is often slow, unstructured, and lacks transparency. This project provides a structured grievance pipeline with:
+Grievance handling in campuses often suffers from unstructured reporting, weak prioritization, and lack of transparency. This project builds a structured grievance pipeline that transforms raw complaints into trackable cases with admin actions and analytics.
 
-* simple student submission
-* real-time persistence (Firestore)
-* admin dashboard with filters and analytics
-* clear status tracking (Submitted → Viewed → Cleared)
-* attachment support
-
-The platform is designed to scale into a complete “Grievance Intelligence System” with optional AI summarization/categorization and automated notifications.
-
----
-
-## Problem Statement
-
-Students face issues such as hostel maintenance, mess concerns, health center availability, safety incidents, and infrastructure breakdowns. Traditional complaint collection lacks:
-
-* proper categorization
-* priority detection
-* tracking and auditability
-* streamlined admin workflow
-
----
-
-## Solution
-
-This system introduces:
-
-1. A minimal student submission portal
-2. Centralized storage using Firebase Firestore
-3. An admin dashboard with management controls and insights
-4. A backend design ready for AI analysis and notifications
+The platform supports:
+- Student grievance submission (with proof attachments)
+- Firestore-backed real-time case management
+- Admin workflow controls: filtering, status updates, and deletions
+- Architecture readiness for Gemini-based intelligence modules
 
 ---
 
 ## Key Features
 
-### Student Side
+### Student Portal
+- Submit grievance with name, email, and description
+- Optional attachments upload (proof images)
+- Unique grievance ID generated after submission
+- Attachments stored as **Base64 in Firestore** (works on free Firebase plan)
 
-* Submit grievance with name/email/complaint
-* Optional attachment upload
-
-  * **Current mode:** attachments stored as Base64 in Firestore (works on free Firebase plan)
-* Successful submission confirmation with grievance ID
-
-### Admin Side
-
-* Secure admin login (PIN-based demo login system)
-* Dashboard listing all grievances
-* Search by Firestore Document ID
-* Filters:
-
-  * Category
-  * Urgency
-  * Status
-  * Date range
-* Status transitions:
-
-  * submitted → viewed → cleared
-* Delete grievance
-* Statistics cards:
-
-  * total grievances
-  * high urgency count
-  * viewed count
-  * cleared count
-* Attachment preview support (image/video/file)
+### Admin Dashboard
+- Admin authentication (demo PIN-based login)
+- Real-time grievance listing from Firestore
+- Search directly using grievance document ID
+- Filters:
+  - Category
+  - Urgency
+  - Status
+  - Date range
+- Status pipeline:
+  **Submitted → Viewed → Cleared**
+- Grievance deletion and resolution updates
+- Dashboard stats cards:
+  - Total grievances
+  - High urgency
+  - Viewed
+  - Cleared
+- Attachment preview inside dashboard
 
 ---
 
 ## System Architecture
 
-###
-
 ```text
-+-------------------+              +---------------------+
-|     Student UI     |              |      Admin UI        |
-| (Submit Grievance) |              | (Dashboard & Actions)|
-+----------+---------+              +----------+-----------+
-           |                                  |
-           | Firestore Write/Read             | Firestore Read/Update/Delete
-           v                                  v
-+---------------------------------------------------------+
-|                   Firebase Firestore                    |
-|  grievances collection                                  |
-|  - complaint details                                    |
-|  - attachments (base64/url)                             |
-|  - status + timestamps                                  |
-+------------------------------+--------------------------+
++----------------------+              +-------------------------+
+|      Student UI      |              |        Admin UI         |
+|  (Submit Grievance)  |              | (Dashboard & Controls)  |
++----------+-----------+              +-----------+-------------+
+           |                                      |
+           | Firestore Write                      | Firestore Read/Update/Delete
+           v                                      v
++---------------------------------------------------------------+
+|                     Firebase Firestore                         |
+| grievances collection                                          |
+| - grievance metadata (category, urgency, sentiment, summary)   |
+| - status workflow (submitted/viewed/cleared)                   |
+| - attachments (base64/url)                                     |
++------------------------------+--------------------------------+
                                |
-                               | optional (future)
+                               | (future enhancement)
                                v
-+---------------------------------------------------------+
-|                    Node.js Backend                      |
-|   - AI Analysis service (Gemini)                        |
-|   - Email/notification service                          |
-|   - Admin integrations                                  |
-+---------------------------------------------------------+
-```
++---------------------------------------------------------------+
+|                      Backend (Node.js)                         |
+| - Gemini AI-based grievance intelligence                        |
+| - Notification & admin integrations                              |
++---------------------------------------------------------------+
+````
 
 ---
 
@@ -185,22 +104,47 @@ This system introduces:
 ### Student Flow
 
 ```text
-Student → Submit Form
-        → (Optional) Add Attachments
-        → Validate Inputs
-        → Store Grievance in Firestore
-        → Show Success + Grievance ID
+Student → Fill grievance form
+        → Attach proof (optional)
+        → Validation
+        → Store grievance in Firestore
+        → Success screen + grievance ID
 ```
 
 ### Admin Flow
 
 ```text
 Admin → Login
-      → Fetch grievances from Firestore
-      → Apply search/filters
+      → Firestore grievance fetch
+      → Search / Filter
       → View grievance + attachments
-      → Update status (viewed/cleared) OR delete
+      → Mark Viewed / Mark Cleared / Delete
 ```
+
+---
+
+## Tech Stack
+
+### Frontend
+
+* React + TypeScript
+* Vite
+* Tailwind CSS
+* shadcn/ui
+* Lucide Icons
+
+### Backend
+
+* Node.js + Express (extensible)
+
+### Cloud & Database
+
+* Firebase Firestore (real-time DB)
+* Firebase Hosting (deployment)
+
+### AI Readiness
+
+* Gemini AI integration pipeline designed (future module for summary, sentiment, urgency, category)
 
 ---
 
@@ -209,45 +153,32 @@ Admin → Login
 ```text
 root/
 │── client/
-│   ├── components/
-│   │   └── ui/                # shadcn/ui components
-│   ├── config/
-│   │   └── firebase.ts        # Firebase initialization + CRUD helpers
-│   ├── pages/
-│   │   ├── Index.tsx
-│   │   ├── SubmitGrievance.tsx
-│   │   ├── AdminLogin.tsx
-│   │   ├── AdminDashboard.tsx
-│   │   └── NotFound.tsx
-│   ├── utils/
-│   │   └── admin-auth.ts      # admin login utilities
-│   ├── App.tsx
-│   └── global.css
+│   ├── components/ui/       # shadcn/ui components
+│   ├── config/firebase.ts   # Firebase config + CRUD helpers
+│   ├── pages/               # Index, Submit, Admin Login, Admin Dashboard
+│   ├── utils/admin-auth.ts  # admin login utilities
+│   └── App.tsx
 │
 │── server/
-│   ├── routes/                # API endpoints (extensible)
-│   ├── utils/                 # helper utilities
-│   └── index.ts               # Express server entry
+│   ├── routes/              # extendable API endpoints
+│   └── index.ts             # backend entry
 │
-│── shared/
-│   └── api.ts                 # shared API types/contracts
-│
-│── README.md
-│── package.json
-│── pnpm-lock.yaml
+│── shared/api.ts            # shared API types/contracts
+│── firebase.json
 │── vite.config.ts
-│── netlify.toml
+│── package.json
+│── README.md
 ```
 
 ---
 
 ## Setup Instructions
 
-### 1) Clone the repository
+### 1) Clone repository
 
 ```bash
-git clone <your-repo-url>
-cd <project-folder>
+git clone https://github.com/VarshiniGunti/campus-ai-grievance-system.git
+cd campus-ai-grievance-system
 ```
 
 ### 2) Install dependencies
@@ -256,31 +187,19 @@ cd <project-folder>
 pnpm install
 ```
 
-### 3) Run frontend
+### 3) Run locally
 
 ```bash
 pnpm dev
 ```
 
-### 4) Run server (optional)
-
-```bash
-pnpm --filter server dev
-```
-
 ---
 
-## Firebase Setup
+## Firebase Configuration
 
-### Create Firebase Project
-
-1. Go to Firebase Console
-2. Create a new project
-3. Enable Firestore Database
-
-### Add Firebase environment variables
-
-Create a `.env` file in root:
+1. Create a Firebase Project
+2. Enable **Firestore Database**
+3. Add environment variables in `.env`:
 
 ```env
 VITE_FIREBASE_API_KEY=...
@@ -292,47 +211,56 @@ VITE_FIREBASE_APP_ID=...
 VITE_FIREBASE_MEASUREMENT_ID=...
 ```
 
-###
-
-
 ---
 
-## Security Notes
+## Deployment (Firebase Hosting)
 
-* The current project is optimized for hackathon/demo use.
-* Admin login is demo-based and should be replaced with:
-  * Firebase Auth (email/password) or
-  * Google OAuth + role-based access.
+### 1) Install Firebase CLI
+
+```bash
+npm install -g firebase-tools
+```
+
+### 2) Login
+
+```bash
+firebase login
+```
+
+### 3) Build
+
+```bash
+pnpm build
+```
+
+### 4) Deploy
+
+```bash
+firebase deploy
+```
 
 ---
 
 ## Future Enhancements
 
-* Gemini AI integration for:
+* Gemini AI powered insights:
 
-  * category detection
-  * urgency estimation
+  * category prediction
+  * urgency detection
   * sentiment analysis
-  * summary generation
-* Email notifications:
-
-  * grievance submitted
-  * admin viewed
-  * grievance cleared
-* File storage upgrade:
-
-  * Firebase Storage (requires billing plan)
-* Role-based admin access
-* Student grievance tracking page using grievance ID
+  * complaint summarization
+* Email / notification workflows
+* Upgrade attachments to Firebase Storage (billing plan)
+* Student grievance tracking page (using grievance ID)
 
 ---
 
 ## Credits
 
-Developed by **Varshini (IIT Bhilai)** as part of **TechSprint Hackathon** hosted by **GDG On Campus, IIT Bhilai**.
+Built by **Varshini (IIT Bhilai)** for **TechSprint Hackathon**, organized by **GDG On Campus, IIT Bhilai**.
 
 ---
 
 ## License
 
-This project is intended for educational and hackathon purposes. You may reuse and modify it with attribution.
+This project is released for educational/hackathon use. Reuse is permitted with attribution.
